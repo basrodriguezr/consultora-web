@@ -1,3 +1,4 @@
+import type { Viewport } from "next";
 import { Inter } from "next/font/google";
 
 import Analytics from "@/components/Analytics";
@@ -33,6 +34,34 @@ const inter = Inter({
 const SCRIPT_TEMA = `(function(){try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}})();`;
 
 export const metadata = seoMetadata;
+
+/**
+ * `color-scheme` como META TAG, no solo como regla CSS.
+ *
+ * Ya está declarado en `globals.css`, y ahí sirve para lo suyo: que el
+ * navegador pinte scrollbars, autofill y controles nativos del color correcto.
+ * **Pero eso llega tarde para otra cosa.**
+ *
+ * Los navegadores móviles con oscurecido forzado —Samsung Internet y el "Auto
+ * dark theme" de Chrome Android— deciden si le aplican SU algoritmo de
+ * inversión a la página antes de parsear la hoja de estilos, y para eso leen
+ * este meta. Sin él, dan por hecho que el sitio no sabe hacer modo oscuro y lo
+ * repintan encima: el ámbar `#ffb224` del CTA sale granate, porque el algoritmo
+ * baja luminancia y corre el tono. Declarar que soportamos los dos esquemas es
+ * la señal estándar para que no toquen nada.
+ *
+ * `themeColor` es el color de la barra del navegador. **Es una tercera copia a
+ * mano de la paleta** —junto con `opengraph-image.tsx`— porque corre fuera de
+ * Tailwind y no puede leer las variables CSS: si cambian `--color-base` o
+ * `--term-base` en `globals.css`, hay que actualizar estos dos hex también.
+ */
+export const viewport: Viewport = {
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf8f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0b0c" },
+  ],
+};
 
 export default function RootLayout({
   children,
