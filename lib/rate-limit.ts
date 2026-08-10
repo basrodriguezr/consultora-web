@@ -27,14 +27,33 @@ export type ResultadoLimite =
   | { permitido: true; restantes: number }
   | { permitido: false; reintentarEnSegundos: number };
 
-/** Ventana de conteo: 10 minutos. */
-const VENTANA_MS = 10 * 60 * 1000;
+/**
+ * Parámetros de un balde. Cada ruta pública trae los suyos: no comparten ni el
+ * límite ni el contador.
+ */
+export interface OpcionesLimite {
+  /**
+   * Separa los contadores de rutas distintas. Sin esto, agotar el balde
+   * mandando assessments dejaría a la misma IP sin poder usar el formulario de
+   * contacto — un flujo caro apagando a uno barato, que es justo lo contrario
+   * de lo que queremos.
+   */
+  namespace: string;
+  /** Requests permitidas por ventana. */
+  max: number;
+  /** Largo de la ventana, en milisegundos. */
+  ventanaMs: number;
+}
 
 /**
- * Máximo de envíos por IP y por ventana. Una persona real manda uno, quizá dos
- * si se equivocó en el email; cinco deja margen de sobra sin regalar cuota.
+ * El balde de `/api/contacto`. Una persona real manda uno, quizá dos si se
+ * equivocó en el email; cinco deja margen de sobra sin regalar cuota de Resend.
  */
-const MAX_POR_VENTANA = 5;
+export const LIMITE_CONTACTO: OpcionesLimite = {
+  namespace: "contacto",
+  max: 5,
+  ventanaMs: 10 * 60 * 1000,
+};
 
 /**
  * Techo de IPs recordadas. Sin esto el mapa crece sin límite y el propio
@@ -142,23 +161,37 @@ export function identificarCliente(request: Request): string {
 }
 
 /**
- * Registra una request y responde si se puede seguir. Cuenta ventana fija: la
- * primera request abre la ventana y las siguientes se acumulan hasta que expira.
+ * Registra una request en el balde indicado y responde si se puede seguir.
+ * Cuenta ventana fija: la primera request abre la ventana y las siguientes se
+ * acumulan hasta que expira.
  *
- * @param clave  identificador del cliente (ver `identificarCliente`)
- * @param ahora  inyectable para poder testear sin depender del reloj
+ * **El namespace se compone dentro de la clave del mapa**, no en un mapa por
+ * ruta. Así el techo de `MAX_CLAVES` y el podado siguen siendo del proceso
+ * entero: son un límite de memoria, no una cuota que cada ruta pueda gastar por
+ * su cuenta. Un mapa por namespace multiplicaría el techo por la cantidad de
+ * rutas, que es exactamente el vector que `MAX_CLAVES` existe para cerrar.
+ *
+ * @param opciones balde a usar (ver `LIMITE_CONTACTO`)
+ * @param clave    identificador del cliente (ver `identificarCliente`)
+ * @param ahora    inyectable para poder testear sin depender del reloj
  */
-export function consumir(clave: string, ahora: number = Date.now()): ResultadoLimite {
+export function consumirCon(
+  opciones: OpcionesLimite,
+  clave: string,
+  ahora: number = Date.now(),
+): ResultadoLimite {
   podar(ahora);
 
-  const registro = almacen.get(clave);
+  const { namespace, max, ventanaMs } = opciones;
+  const claveConNamespace = `${namespace}:${clave}`;
+  const registro = almacen.get(claveConNamespace);
 
   if (!registro || registro.expiraEn <= ahora) {
-    almacen.set(clave, { conteo: 1, expiraEn: ahora + VENTANA_MS });
-    return { permitido: true, restantes: MAX_POR_VENTANA - 1 };
+    almacen.set(claveConNamespace, { conteo: 1, expiraEn: ahora + ventanaMs });
+    return { permitido: true, restantes: max - 1 };
   }
 
-  if (registro.conteo >= MAX_POR_VENTANA) {
+  if (registro.conteo >= max) {
     return {
       permitido: false,
       reintentarEnSegundos: Math.max(1, Math.ceil((registro.expiraEn - ahora) / 1000)),
@@ -166,5 +199,14 @@ export function consumir(clave: string, ahora: number = Date.now()): ResultadoLi
   }
 
   registro.conteo += 1;
-  return { permitido: true, restantes: MAX_POR_VENTANA - registro.conteo };
+  return { permitido: true, restantes: max - registro.conteo };
+}
+
+/**
+ * El límite de `/api/contacto`. Se mantiene como función propia —y no como una
+ * llamada a `consumirCon` desde el route— para que la ruta que hoy funciona en
+ * producción no cambie de firma en un refactor pensado para otra fase.
+ */
+export function consumir(clave: string, ahora: number = Date.now()): ResultadoLimite {
+  return consumirCon(LIMITE_CONTACTO, clave, ahora);
 }

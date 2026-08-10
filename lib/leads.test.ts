@@ -6,6 +6,7 @@ import {
   etiquetaRol,
   honeypotField,
   leadContactoSchema,
+  leadSchema,
   normalizarLead,
   type LeadContacto,
 } from "@/lib/leads";
@@ -138,6 +139,10 @@ describe("normalizarLead", () => {
 
   it("conserva rol y desafío tal como los validó el esquema", () => {
     const resultado = normalizarLead(base, new Date());
+    // `normalizarLead` devuelve la unión: hay que estrechar por el
+    // discriminante antes de leer los campos propios de esta variante.
+    expect(resultado.tipo).toBe("contacto");
+    if (resultado.tipo !== "contacto") throw new Error("variante inesperada");
     expect(resultado.rol).toBe("gerente-ti");
     expect(resultado.desafio).toBe("costos-cloud");
   });
@@ -177,5 +182,138 @@ describe("esCorreoPersonal", () => {
 
   it("no revienta con un texto sin arroba", () => {
     expect(esCorreoPersonal("ana")).toBe(false);
+  });
+});
+
+describe("leadSchema — la unión discriminada", () => {
+  const assessmentValido = {
+    tipo: "assessment" as const,
+    nombre: "Ana Pérez",
+    email: "ana@acme.cl",
+    empresa: "Acme SpA",
+    problemaPrincipal: "Los reportes mensuales se arman a mano y tardan días.",
+    solucionActual: "Planillas Excel.",
+    fuentesDatos: ["erp"],
+    equipoDatos: "parcial",
+    personasConDatos: 4,
+    cloud: "aws",
+    presupuesto: "asignado",
+    urgencia: "alta",
+  };
+
+  it("acepta un lead de assessment completo", () => {
+    expect(leadSchema.safeParse(assessmentValido).success).toBe(true);
+  });
+
+  it("sigue aceptando el lead de contacto de la Fase 1", () => {
+    expect(
+      leadSchema.safeParse({
+        tipo: "contacto",
+        nombre: "Ana Pérez",
+        email: "ana@acme.cl",
+        rol: "gerente-ti",
+        desafio: "costos-cloud",
+      }).success,
+    ).toBe(true);
+  });
+
+  /**
+   * `empresa` es obligatoria solo en esta variante: el pre-diagnóstico la
+   * interpola en el encabezado y sin ella el documento sale con `[Empresa]`.
+   * Es un campo obligatorio del entregable, no del CRM.
+   */
+  it("exige empresa en assessment", () => {
+    const sinEmpresa: Record<string, unknown> = { ...assessmentValido };
+    delete sinEmpresa.empresa;
+    expect(leadSchema.safeParse(sinEmpresa).success).toBe(false);
+  });
+
+  it("exige al menos una fuente de datos", () => {
+    expect(
+      leadSchema.safeParse({ ...assessmentValido, fuentesDatos: [] }).success,
+    ).toBe(false);
+  });
+
+  /**
+   * "No sé cuántas horas nos consume" es una respuesta legítima y de primera
+   * clase: es falta de visibilidad, que es lo que vende la consultora. Si el
+   * esquema la rechazara, el filtro descartaría al cliente ideal antes incluso
+   * de llegar a `calificacion.ts`.
+   */
+  it("acepta 'no-se' como respuesta de horas", () => {
+    expect(
+      leadSchema.safeParse({ ...assessmentValido, horasSemanaProceso: "no-se" })
+        .success,
+    ).toBe(true);
+  });
+
+  it("las cuatro preguntas nuevas son opcionales", () => {
+    // `assessmentValido` no trae ninguna de las cuatro y ya pasó arriba.
+    expect(leadSchema.safeParse(assessmentValido).success).toBe(true);
+  });
+
+  /**
+   * Un `tipo` que no es ninguna de las dos variantes no puede caer en la rama
+   * equivocada: `discriminatedUnion` corta antes de evaluar campos.
+   */
+  it("rechaza un tipo desconocido", () => {
+    expect(
+      leadSchema.safeParse({ ...assessmentValido, tipo: "propuesta" }).success,
+    ).toBe(false);
+  });
+});
+
+describe("normalizarLead — variante assessment", () => {
+  it("conserva los campos del assessment y estampa la hora", () => {
+    const datos = leadSchema.parse({
+      tipo: "assessment",
+      nombre: "Ana Pérez",
+      email: "ana@acme.cl",
+      empresa: "Acme SpA",
+      problemaPrincipal: "Los reportes mensuales se arman a mano y tardan días.",
+      solucionActual: "Planillas Excel.",
+      fuentesDatos: ["erp", "crm"],
+      equipoDatos: "no",
+      personasConDatos: 1,
+      cloud: "ninguno",
+      presupuesto: "en-evaluacion",
+      urgencia: "media",
+      horasSemanaProceso: "no-se",
+    });
+
+    const lead = normalizarLead(datos, new Date("2026-08-09T12:00:00.000Z"));
+    expect(lead.tipo).toBe("assessment");
+    if (lead.tipo !== "assessment") throw new Error("variante inesperada");
+    expect(lead.empresa).toBe("Acme SpA");
+    expect(lead.fuentesDatos).toEqual(["erp", "crm"]);
+    expect(lead.horasSemanaProceso).toBe("no-se");
+    expect(lead.recibidoEn).toBe("2026-08-09T12:00:00.000Z");
+  });
+
+  /**
+   * Un campo no respondido queda `undefined`, no en un valor por defecto: el
+   * renderer lo traduce a `[por confirmar en discovery]` y esa distinción es lo
+   * que impide que el documento afirme cosas que nadie dijo.
+   */
+  it("deja en undefined lo que no se respondió", () => {
+    const datos = leadSchema.parse({
+      tipo: "assessment",
+      nombre: "Ana Pérez",
+      email: "ana@acme.cl",
+      empresa: "Acme SpA",
+      problemaPrincipal: "Los reportes mensuales se arman a mano y tardan días.",
+      solucionActual: "Planillas Excel.",
+      fuentesDatos: ["erp"],
+      equipoDatos: "no",
+      personasConDatos: 1,
+      cloud: "ninguno",
+      presupuesto: "en-evaluacion",
+      urgencia: "media",
+    });
+
+    const lead = normalizarLead(datos, new Date());
+    if (lead.tipo !== "assessment") throw new Error("variante inesperada");
+    expect(lead.horasSemanaProceso).toBeUndefined();
+    expect(lead.sponsor).toBeUndefined();
   });
 });

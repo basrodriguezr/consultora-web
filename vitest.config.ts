@@ -18,6 +18,23 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./", import.meta.url)),
+
+      /**
+       * `server-only` es un paquete-marcador: su `index.js` **lanza una
+       * excepción al importarse**, y así es como convierte un import desde el
+       * cliente en un error de build. El truco es que solo el bundler de Next
+       * resuelve la condición `react-server` (que apunta a un `empty.js`);
+       * Vitest corre en Node plano, cae al `index.js` y explota.
+       *
+       * Sin este alias, todo módulo marcado `server-only` queda **imposible de
+       * testear** — hoy `catalogo-interno.ts` (los rangos en CLP) y `render.ts`
+       * (el pre-diagnóstico entero, con su golden test). Apuntamos al mismo
+       * `empty.js` que usaría Next: no debilita la garantía, porque lo que
+       * protege los precios es el build de producción, no el runner de tests.
+       */
+      "server-only": fileURLToPath(
+        new URL("./node_modules/server-only/empty.js", import.meta.url),
+      ),
     },
   },
   test: {

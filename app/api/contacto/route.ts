@@ -1,13 +1,13 @@
 import { z } from "zod";
 
 import { site } from "@/content/site";
-import { enviarEmailLead } from "@/lib/email";
 import {
   honeypotField,
   leadContactoSchema,
   normalizarLead,
   type RespuestaContacto,
 } from "@/lib/leads";
+import { procesarLead } from "@/lib/procesar-lead";
 import { consumir, identificarCliente } from "@/lib/rate-limit";
 
 /**
@@ -160,9 +160,10 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  // 4. Normalización + envío.
+  // 4. Normalización + flujo. Qué le pasa al lead lo decide `procesarLead`;
+  //    acá solo se traduce ese resultado a HTTP.
   const lead = normalizarLead(analisis.data, new Date());
-  const envio = await enviarEmailLead(lead);
+  const { envio } = await procesarLead(lead);
 
   if (!envio.ok) {
     // El detalle (incluida cualquier respuesta de Resend) queda solo en el log.
