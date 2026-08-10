@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { agruparIp, consumir, identificarCliente } from "@/lib/rate-limit";
+import {
+  agruparIp,
+  consumir,
+  consumirCon,
+  identificarCliente,
+  LIMITE_CONTACTO,
+  type OpcionesLimite,
+} from "@/lib/rate-limit";
 
 /**
  * El contador vive en `globalThis` y sobrevive entre tests dentro del mismo
@@ -144,5 +151,67 @@ describe("identificarCliente", () => {
     // Deliberadamente estricto: si no se puede distinguir a nadie, se limita
     // de más antes que dejar la puerta abierta.
     expect(identificarCliente(conHeaders({}))).toBe("sin-ip");
+  });
+});
+
+describe("consumirCon — baldes por namespace", () => {
+  const ASSESSMENT: OpcionesLimite = {
+    namespace: "assessment",
+    max: 2,
+    ventanaMs: 60 * 60 * 1000,
+  };
+
+  /**
+   * El motivo por el que existe el namespace. Sin él, agotar el balde mandando
+   * assessments —que son 2 por hora— dejaría a esa misma IP sin poder usar el
+   * formulario de contacto: un flujo caro apagando a uno barato, que es lo
+   * contrario de lo que queremos.
+   */
+  it("agotar un namespace no afecta al otro", () => {
+    const clave = claveNueva();
+
+    // Se agota el balde de assessment.
+    expect(consumirCon(ASSESSMENT, clave).permitido).toBe(true);
+    expect(consumirCon(ASSESSMENT, clave).permitido).toBe(true);
+    expect(consumirCon(ASSESSMENT, clave).permitido).toBe(false);
+
+    // El de contacto, con la misma clave, sigue intacto.
+    expect(consumir(clave).permitido).toBe(true);
+  });
+
+  it("cada namespace respeta su propio máximo", () => {
+    const clave = claveNueva();
+    for (let i = 0; i < 5; i += 1) expect(consumir(clave).permitido).toBe(true);
+    expect(consumir(clave).permitido).toBe(false);
+
+    // Assessment permite 2, no 5.
+    expect(consumirCon(ASSESSMENT, clave).permitido).toBe(true);
+    expect(consumirCon(ASSESSMENT, clave).permitido).toBe(true);
+    expect(consumirCon(ASSESSMENT, clave).permitido).toBe(false);
+  });
+
+  it("cada namespace respeta su propia ventana", () => {
+    const clave = claveNueva();
+    const ahora = 5_000_000;
+    for (let i = 0; i < 2; i += 1) consumirCon(ASSESSMENT, clave, ahora);
+
+    const bloqueado = consumirCon(ASSESSMENT, clave, ahora + 60_000);
+    expect(bloqueado.permitido).toBe(false);
+    if (!bloqueado.permitido) {
+      // Ventana de 60 min, pasó 1 → quedan 59.
+      expect(bloqueado.reintentarEnSegundos).toBe(3_540);
+    }
+  });
+
+  /**
+   * `consumir()` es la ruta que hoy corre en producción. El refactor no puede
+   * haberle cambiado el comportamiento: sigue siendo 5 cada 10 minutos.
+   */
+  it("consumir() sigue siendo el balde de contacto de siempre", () => {
+    expect(LIMITE_CONTACTO).toEqual({
+      namespace: "contacto",
+      max: 5,
+      ventanaMs: 600_000,
+    });
   });
 });
