@@ -1,14 +1,19 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import {
-  asuntoLead,
-  cuerpoHtmlLead,
-  cuerpoTextoLead,
-  enviarEmailLead,
-} from "@/lib/email";
-import type { Lead } from "@/lib/leads";
+import { enviarEmailLead, plantillaLead } from "@/lib/email";
+import type {
+  LeadAssessmentNormalizado,
+  LeadContactoNormalizado,
+} from "@/lib/leads";
 
-function lead(cambios: Partial<Lead> = {}): Lead {
+/**
+ * El fixture se tipa como la variante de contacto y no como `Lead`: con la
+ * unión, un `Partial<Lead>` deja pasar mezclas imposibles (campos de las dos
+ * variantes en el mismo objeto) y el error aparecería recién en la aserción.
+ */
+function lead(
+  cambios: Partial<LeadContactoNormalizado> = {},
+): LeadContactoNormalizado {
   return {
     tipo: "contacto",
     nombre: "Ana Pérez",
@@ -19,6 +24,11 @@ function lead(cambios: Partial<Lead> = {}): Lead {
     ...cambios,
   };
 }
+
+/** Atajos: los tres cuerpos salen ahora de una sola plantilla. */
+const asuntoLead = (l: LeadContactoNormalizado) => plantillaLead(l).asunto;
+const cuerpoTextoLead = (l: LeadContactoNormalizado) => plantillaLead(l).texto;
+const cuerpoHtmlLead = (l: LeadContactoNormalizado) => plantillaLead(l).html;
 
 describe("asuntoLead", () => {
   it("arma un asunto escaneable de un vistazo", () => {
@@ -119,5 +129,83 @@ describe("enviarEmailLead sin configurar", () => {
     const resultado = await enviarEmailLead(lead());
     expect(resultado.ok).toBe(false);
     if (!resultado.ok) expect(resultado.motivo).toBe("sin-configurar");
+  });
+});
+
+describe("plantillaLead — lead de assessment", () => {
+  function assessment(
+    cambios: Partial<LeadAssessmentNormalizado> = {},
+  ): LeadAssessmentNormalizado {
+    return {
+      tipo: "assessment",
+      nombre: "Ana Pérez",
+      email: "ana@acme.cl",
+      empresa: "Acme SpA",
+      problemaPrincipal: "Los reportes se arman a mano.",
+      solucionActual: "Planillas Excel.",
+      fuentesDatos: ["erp", "planillas-excel"],
+      equipoDatos: "parcial",
+      personasConDatos: 4,
+      cloud: "aws",
+      presupuesto: "asignado",
+      urgencia: "alta",
+      recibidoEn: "2026-08-09T12:00:00.000Z",
+      ...cambios,
+    };
+  }
+
+  /**
+   * Los tres campos de texto libre son la única prosa que un desconocido puede
+   * meter en este email. El escapado es lo que separa "un lead con símbolos" de
+   * "HTML ejecutándose en la bandeja de Daniela".
+   */
+  it.each([
+    ["problemaPrincipal", { problemaPrincipal: "<img src=x onerror=alert(1)>" }],
+    ["solucionActual", { solucionActual: "<script>alert('x')</script>" }],
+    ["sistemasActuales", { sistemasActuales: "<b>SAP</b>" }],
+    ["empresa", { empresa: "<script>alert('x')</script>" }],
+  ])("escapa el HTML de %s", (_campo, cambio) => {
+    const html = plantillaLead(assessment(cambio)).html;
+
+    // Lo que importa es que no quede NINGÚN delimitador de tag sin escapar.
+    // Un `onerror=` suelto sobrevive como texto plano y es inofensivo: sin
+    // `<` que abra una etiqueta, no hay nada que lo interprete.
+    expect(html).not.toMatch(/<script|<img|<b>/);
+    expect(html).toContain("&lt;");
+  });
+
+  /**
+   * `nombre` y `empresa` se interpolan en el asunto: un `\r\n` ahí es inyección
+   * de headers SMTP. El esquema ya los rechaza, pero esta función es exportada
+   * y no debe depender de que quien la llame haya validado antes.
+   */
+  it("aplasta el asunto en una sola línea", () => {
+    const asunto = plantillaLead(
+      assessment({ empresa: "Acme\r\nBcc: victima@ejemplo.cl\x00" }),
+    ).asunto;
+    expect(asunto).not.toMatch(/[\r\n\x00]/);
+  });
+
+  it("muestra las etiquetas de los enums, no los slugs", () => {
+    const texto = plantillaLead(assessment()).texto;
+    expect(texto).toContain("Planillas Excel");
+    expect(texto).not.toContain("planillas-excel");
+  });
+
+  /** La marca del asunto es lo que permite triar desde la lista de la bandeja. */
+  it("marca el asunto solo cuando el lead no califica", () => {
+    expect(plantillaLead(assessment(), "probablemente-no").asunto).toContain(
+      "⚠️ probablemente no califica",
+    );
+    expect(plantillaLead(assessment(), "a-evaluar").asunto).not.toContain("⚠️");
+    expect(plantillaLead(assessment()).asunto).not.toContain("⚠️");
+  });
+
+  /**
+   * Un campo opcional sin responder tiene que verse como tal. Un espacio en
+   * blanco en la bandeja se lee como un bug del formulario.
+   */
+  it("marca los opcionales no respondidos", () => {
+    expect(plantillaLead(assessment()).texto).toContain("[no respondido]");
   });
 });

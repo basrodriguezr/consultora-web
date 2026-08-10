@@ -3,10 +3,19 @@ import { Resend } from "resend";
 import { site } from "@/content/site";
 import { envCon } from "@/lib/env";
 import {
+  ETIQUETAS_CLOUD,
+  ETIQUETAS_EQUIPO,
+  ETIQUETAS_EVALUANDO_CAMBIO,
+  ETIQUETAS_PRESUPUESTO,
+  ETIQUETAS_URGENCIA,
   esCorreoPersonal,
   etiquetaDesafio,
+  etiquetaFuenteDatos,
   etiquetaRol,
+  type Calificacion,
   type Lead,
+  type LeadAssessmentNormalizado,
+  type LeadContactoNormalizado,
 } from "@/lib/leads";
 
 /**
@@ -73,43 +82,139 @@ function emailAnotado(lead: Lead): string {
     : lead.email;
 }
 
+/** Un dato del lead: etiqueta visible y valor ya legible. */
+type Fila = [string, string];
+
+/** Valor de un campo opcional, o la marca de que no se respondió. */
+function opcional(valor: string | undefined): string {
+  return valor && valor.trim() !== "" ? valor : "[no respondido]";
+}
+
 /**
- * Las cuatro filas del lead más la hora, en el mismo orden en texto y en HTML.
- * `rol` y `desafio` viajan como slug pero se muestran con su etiqueta: nadie
- * debería tener que traducir `gerente-ti` mentalmente al leer la bandeja.
+ * Filas del lead de contacto. `rol` y `desafio` viajan como slug pero se
+ * muestran con su etiqueta: nadie debería tener que traducir `gerente-ti`
+ * mentalmente al leer la bandeja.
  */
-function filasLead(lead: Lead): Array<[string, string]> {
+function filasContacto(lead: LeadContactoNormalizado): Fila[] {
   return [
     ["Nombre", lead.nombre],
     ["Email", emailAnotado(lead)],
     ["Rol", etiquetaRol(lead.rol)],
     ["Desafío", etiquetaDesafio(lead.desafio)],
-    ["Recibido", `${fechaLegible(lead.recibidoEn)} (${lead.recibidoEn})`],
   ];
 }
 
 /**
- * `Nuevo lead: Ana Pérez — Costos cloud creciendo sin visibilidad`.
+ * Filas del lead de assessment.
  *
- * El desafío va en el asunto porque es el único dato que permite decidir si
- * responder ahora o después sin abrir el email.
+ * El orden no es el del formulario: primero lo que permite decidir si esta
+ * conversación va a alguna parte (empresa, presupuesto, urgencia, equipo) y
+ * después el material largo. Daniela lee esto en el celular antes de una
+ * discovery, no como un registro de base de datos.
  */
-export function asuntoLead(lead: Lead): string {
-  return unaSolaLinea(
-    `Nuevo lead: ${lead.nombre} — ${etiquetaDesafio(lead.desafio)}`,
-  );
+function filasAssessment(lead: LeadAssessmentNormalizado): Fila[] {
+  return [
+    ["Nombre", lead.nombre],
+    ["Email", emailAnotado(lead)],
+    ["Empresa", lead.empresa],
+    ["Presupuesto", ETIQUETAS_PRESUPUESTO[lead.presupuesto]],
+    ["Urgencia", ETIQUETAS_URGENCIA[lead.urgencia]],
+    ["Equipo de datos", ETIQUETAS_EQUIPO[lead.equipoDatos]],
+    ["Personas con datos", String(lead.personasConDatos)],
+    ["Cloud", ETIQUETAS_CLOUD[lead.cloud]],
+    ["Fuentes de datos", lead.fuentesDatos.map(etiquetaFuenteDatos).join(", ")],
+    [
+      "Horas/semana del proceso",
+      lead.horasSemanaProceso
+        ? `${lead.horasSemanaProceso} (declarado)`
+        : "[no respondido]",
+    ],
+    ["Sponsor", opcional(lead.sponsor)],
+    [
+      "¿Evalúa cambiar de sistema?",
+      lead.evaluandoCambio
+        ? ETIQUETAS_EVALUANDO_CAMBIO[lead.evaluandoCambio]
+        : "[no respondido]",
+    ],
+    ["Sistemas actuales", opcional(lead.sistemasActuales)],
+    ["Problema principal", lead.problemaPrincipal],
+    ["Cómo lo resuelven hoy", lead.solucionActual],
+  ];
 }
 
-/** Cuerpo en texto plano con todos los campos del lead. */
-export function cuerpoTextoLead(lead: Lead): string {
-  const ancho = Math.max(...filasLead(lead).map(([etiqueta]) => etiqueta.length));
+/** Sufijo del asunto que permite triar desde la lista, sin abrir el email. */
+function marcaCalificacion(calificacion: Calificacion | undefined): string {
+  return calificacion === "probablemente-no"
+    ? " — ⚠️ probablemente no califica"
+    : "";
+}
+
+/** Email listo para enviar: lo que cambia entre un tipo de lead y otro. */
+export interface PlantillaEmail {
+  asunto: string;
+  texto: string;
+  html: string;
+}
+
+/**
+ * Arma el email del lead. **Es el único `switch` sobre `tipo` de este módulo.**
+ *
+ * La alternativa —un `switch` dentro de `asuntoLead`, otro dentro de
+ * `cuerpoTextoLead` y otro dentro de `cuerpoHtmlLead`— serían tres lugares
+ * donde olvidarse de una variante, y dos de ellos fallarían en silencio
+ * (un email con menos filas no rompe nada, solo pierde datos). Acá lo que
+ * cambia por tipo son **las filas y el asunto**; el armado es común.
+ *
+ * `calificacion` solo aplica a los leads de assessment: es lo que le pone la
+ * marca al asunto (§8 del plan de Fase 2). No es un campo del lead porque no
+ * viene del formulario, se calcula; y no lo calcula este módulo porque es
+ * criterio comercial, no de presentación.
+ */
+export function plantillaLead(
+  lead: Lead,
+  calificacion?: Calificacion,
+): PlantillaEmail {
+  switch (lead.tipo) {
+    case "contacto": {
+      const filas = filasContacto(lead);
+      return {
+        asunto: unaSolaLinea(
+          `Nuevo lead: ${lead.nombre} — ${etiquetaDesafio(lead.desafio)}`,
+        ),
+        texto: cuerpoTexto(`Nuevo lead desde el formulario de ${site.nombre}`, lead, filas),
+        html: cuerpoHtml(`Nuevo lead desde el formulario de ${site.nombre}`, lead, filas),
+      };
+    }
+    case "assessment": {
+      const filas = filasAssessment(lead);
+      const titulo = `Assessment: ${lead.nombre} (${lead.empresa})`;
+      return {
+        asunto: unaSolaLinea(`${titulo}${marcaCalificacion(calificacion)}`),
+        texto: cuerpoTexto(titulo, lead, filas),
+        html: cuerpoHtml(titulo, lead, filas),
+      };
+    }
+    default: {
+      const noManejado: never = lead;
+      throw new Error(
+        `Tipo de lead no manejado en plantillaLead: ${JSON.stringify(noManejado)}`,
+      );
+    }
+  }
+}
+
+/** Cuerpo en texto plano: título, filas alineadas y la hora de recepción. */
+function cuerpoTexto(titulo: string, lead: Lead, filas: Fila[]): string {
+  const todas: Fila[] = [
+    ...filas,
+    ["Recibido", `${fechaLegible(lead.recibidoEn)} (${lead.recibidoEn})`],
+  ];
+  const ancho = Math.max(...todas.map(([etiqueta]) => etiqueta.length));
 
   return [
-    `Nuevo lead desde el formulario de ${site.nombre}`,
+    titulo,
     "",
-    ...filasLead(lead).map(
-      ([etiqueta, valor]) => `${`${etiqueta}:`.padEnd(ancho + 2)}${valor}`,
-    ),
+    ...todas.map(([etiqueta, valor]) => `${`${etiqueta}:`.padEnd(ancho + 2)}${valor}`),
     "",
     "—",
     "Responde directo a este email: el remitente del lead está en Reply-To.",
@@ -117,21 +222,26 @@ export function cuerpoTextoLead(lead: Lead): string {
 }
 
 /** Cuerpo HTML equivalente. Todo dato del lead va escapado. */
-export function cuerpoHtmlLead(lead: Lead): string {
-  const celdas = filasLead(lead)
+function cuerpoHtml(titulo: string, lead: Lead, filas: Fila[]): string {
+  const todas: Fila[] = [
+    ...filas,
+    ["Recibido", `${fechaLegible(lead.recibidoEn)} (${lead.recibidoEn})`],
+  ];
+
+  const celdas = todas
     .map(
       ([etiqueta, valor]) =>
-        `<tr><td style="padding:4px 12px 4px 0;color:#71717a;">${escaparHtml(
+        `<tr><td style="padding:4px 12px 4px 0;color:#71717a;vertical-align:top;">${escaparHtml(
           etiqueta,
-        )}</td><td style="padding:4px 0;">${escaparHtml(valor)}</td></tr>`,
+        )}</td><td style="padding:4px 0;white-space:pre-wrap;">${escaparHtml(
+          valor,
+        )}</td></tr>`,
     )
     .join("");
 
   return [
     `<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.6;color:#18181b;">`,
-    `<h2 style="font-size:16px;margin:0 0 16px;">Nuevo lead desde el formulario de ${escaparHtml(
-      site.nombre,
-    )}</h2>`,
+    `<h2 style="font-size:16px;margin:0 0 16px;">${escaparHtml(titulo)}</h2>`,
     `<table style="border-collapse:collapse;margin-bottom:16px;">${celdas}</table>`,
     `<p style="margin:16px 0 0;color:#71717a;font-size:12px;">Responde directo a este email: el remitente del lead está en Reply-To.</p>`,
     `</div>`,
@@ -142,7 +252,10 @@ export function cuerpoHtmlLead(lead: Lead): string {
  * Envía la notificación del lead. Nunca lanza: todo error se devuelve como
  * `{ ok: false }` para que el route decida qué contarle al usuario.
  */
-export async function enviarEmailLead(lead: Lead): Promise<ResultadoEnvio> {
+export async function enviarEmailLead(
+  lead: Lead,
+  calificacion?: Calificacion,
+): Promise<ResultadoEnvio> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     return {
@@ -157,15 +270,17 @@ export async function enviarEmailLead(lead: Lead): Promise<ResultadoEnvio> {
   const from = envCon(process.env.CONTACTO_FROM, REMITENTE_POR_DEFECTO);
   const to = envCon(process.env.CONTACTO_TO, site.email);
 
+  const plantilla = plantillaLead(lead, calificacion);
+
   try {
     const resend = new Resend(apiKey);
     const { data, error } = await resend.emails.send({
       from,
       to,
       replyTo: lead.email,
-      subject: asuntoLead(lead),
-      text: cuerpoTextoLead(lead),
-      html: cuerpoHtmlLead(lead),
+      subject: plantilla.asunto,
+      text: plantilla.texto,
+      html: plantilla.html,
     });
 
     if (error) {

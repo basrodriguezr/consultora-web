@@ -32,7 +32,20 @@ export interface Servicio {
   destacado?: boolean;
 }
 
-export const servicios: Servicio[] = [
+/**
+ * `as const satisfies` y no `: Servicio[]`, que es lo que había antes.
+ *
+ * La anotación normal ensancha cada `slug` a `string`, y con eso
+ * `(typeof servicios)[number]["slug"]` colapsa a `string`: el enum de servicios
+ * de la Fase 2 —el que restringe qué puede elegir el modelo— tendría que
+ * escribirse a mano y **agregar un servicio dejaría de propagarse solo**, que
+ * es la propiedad por la que este archivo existe.
+ *
+ * `as const` preserva los literales; `satisfies` mantiene el chequeo contra la
+ * interface, así que un servicio al que le falte `plazo` o traiga un `inversion`
+ * inventado sigue rompiendo el build acá y no más adelante.
+ */
+export const servicios = [
   {
     slug: "assessment",
     nombre: "Assessment de Datos",
@@ -84,4 +97,26 @@ export const servicios: Servicio[] = [
     inversion: "media",
     destacado: true,
   },
+] as const satisfies readonly Servicio[];
+
+/**
+ * Los slugs del catálogo como unión de literales, derivada del array.
+ *
+ * Es el tipo que ata las tres piezas de la Fase 2 a esta única fuente: el enum
+ * del esquema de salida del modelo, las claves de `catalogo-interno.ts` y el
+ * catálogo que se inyecta en el prompt. Agregar un servicio acá **rompe el
+ * build** en el catálogo interno hasta que se le asigne un rango — que es el
+ * modo de falla correcto, en vez de un `undefined` renderizado como hueco.
+ */
+export type SlugServicio = (typeof servicios)[number]["slug"];
+
+/**
+ * Los mismos slugs en runtime, con la forma que pide `z.enum()`: una tupla no
+ * vacía. La aserción es necesaria porque `.map()` devuelve un array común y
+ * zod exige al menos un elemento en el tipo; el array literal de arriba
+ * garantiza que nunca está vacío.
+ */
+export const slugsServicios = servicios.map((s) => s.slug) as [
+  SlugServicio,
+  ...SlugServicio[],
 ];
