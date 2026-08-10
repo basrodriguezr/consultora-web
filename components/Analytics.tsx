@@ -21,29 +21,11 @@ export default function Analytics() {
 
   return (
     <>
-      {/*
-        `lazyOnload` y no `afterInteractive`, que era lo que había.
-
-        `afterInteractive` hace que Next emita
-        `<link rel="preload" as="script">` para el gtag: el navegador le da
-        prioridad alta y compite con la ruta crítica. En desktop no se nota;
-        en móvil —donde Lighthouse simula 4G y CPU 4× más lenta— sí, y era
-        parte del Rendimiento 89 medido contra producción el 2026-08-09.
-        `lazyOnload` carga el tag en tiempo ocioso, después de todo lo demás,
-        y **no emite el preload**.
-
-        La contrapartida, que es real: se pierden pageviews de quien abre y
-        cierra antes del idle. En una landing cuyo trabajo es que alguien
-        baje hasta el formulario, medir esos rebotes de dos segundos vale
-        menos que cargar rápido en el celular, que es donde llegan los
-        clientes. Si algún día hace falta esa fidelidad, el cambio es esta
-        línea — no un rediseño.
-      */}
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-        strategy="lazyOnload"
+        strategy="afterInteractive"
       />
-      <Script id="ga4-init" strategy="lazyOnload">
+      <Script id="ga4-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
