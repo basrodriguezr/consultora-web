@@ -22,7 +22,9 @@ npm run dev
 
 Abrir http://localhost:3000.
 
-El sitio **levanta sin configurar nada**: sin `RESEND_API_KEY` el formulario muestra un mensaje pidiendo escribir al email directo, sin `NEXT_PUBLIC_GA_ID` no se inyecta Analytics y sin `NEXT_PUBLIC_CALENDLY_URL` los botones de agenda caen al mailto. Para probar el envío real de leads hay que completar las variables.
+El sitio **levanta sin configurar nada**: sin `RESEND_API_KEY` el formulario muestra un mensaje pidiendo escribir al email directo y sin `NEXT_PUBLIC_GA_ID` no se inyecta Analytics. Para probar el envío real de leads hay que completar las variables.
+
+⚠️ **`NEXT_PUBLIC_CALENDLY_URL` es la excepción: no degrada.** Los CTA del hero y del nav apuntan siempre a `#contacto`; el fallback a `mailto` está dentro de `CalendlyEmbed`, que solo se monta **después** de enviar el formulario (y en `/thank-you`). Sin la variable, quien llega a la home no ve agenda ni alternativa hasta convertir — por eso es prerrequisito duro de despliegue y no degradación elegante.
 
 ## Scripts
 
@@ -45,7 +47,7 @@ Se copian de `.env.example` a `.env.local`. **`.env.local` está fuera de git** 
 | `RESEND_API_KEY` | API key de Resend para enviar el email del lead. Sin ella el formulario responde 503 con un mensaje que deriva al email. | Sí, para que el formulario funcione | **SÍ** |
 | `CONTACTO_FROM` | Remitente verificado en Resend. Por defecto `onboarding@resend.dev` (sandbox, sirve para pruebas). | No | Sí (no exponer) |
 | `CONTACTO_TO` | Casilla que recibe los leads. Por defecto, el email de `content/site.ts`. | No | **SÍ** |
-| `NEXT_PUBLIC_CALENDLY_URL` | Link de la discovery call de 30 min. Vacío = la UI usa mailto. | No | No (pública) |
+| `NEXT_PUBLIC_CALENDLY_URL` | Link de la discovery call de 30 min. Vacío = **no hay agenda en ninguna parte del sitio**; el `mailto` de respaldo solo aparece post-envío. | **En producción sí** (prerrequisito duro) | No (pública) |
 | `NEXT_PUBLIC_GA_ID` | ID de la property de Google Analytics 4. Vacío = no se carga el script. | No | No (pública) |
 
 Convención del proyecto (`lib/env.ts`): **una variable definida pero vacía cuenta como ausente**, que es el caso típico de crearla en el panel de Vercel y dejarla en blanco. Y si `NEXT_PUBLIC_SITE_URL` no es una URL válida, se cae al valor por defecto en vez de tumbar el build.
@@ -246,13 +248,14 @@ Detalles que importan:
 
 ## Deploy
 
-**El sitio está en producción**: `https://codebass.org` (dominio de Bastián, interino hasta que se defina el de la consultora).
+**El sitio está en producción**: `https://arqdata.cl` — dominio definitivo, registrado en NIC Chile y con DNS en Cloudflare (2026-08-01). `codebass.org` fue el dominio puente y **debe redirigir con 308 hacia el nuevo**, no seguir sirviendo el sitio.
 
 - Hosting: **Vercel** (free tier), conectado al repo `github.com/Danichavez/consultora-web`.
 - **Push a `main` = producción.** Cualquier otra rama genera un deploy de preview con su propia URL.
-- **El apex es el dominio canónico** y `www.codebass.org` redirige a él con un 308 permanente (Vercel → Settings → Domains). Tiene que coincidir con `NEXT_PUBLIC_SITE_URL`: de esa variable salen el canonical, `og:url`, el sitemap y el robots, así que si apuntan al dominio que redirige, **todas las URLs que publicamos redirigen**.
+- **El apex `arqdata.cl` es el dominio canónico** y `www.arqdata.cl` redirige a él con un 308 permanente (Vercel → Settings → Domains; el desplegable ofrece 307 por defecto). Tiene que coincidir con `NEXT_PUBLIC_SITE_URL`: de esa variable salen el canonical, `og:url`, el sitemap y el robots, así que si apuntan al dominio que redirige, **todas las URLs que publicamos redirigen**.
+- ⚠️ **`NEXT_PUBLIC_SITE_URL` se hornea en el build.** Cambiarla en el panel de Vercel no hace nada hasta que haya un deploy nuevo. Ya pasó una vez: el sitio se sirvió en `arqdata.cl` emitiendo `canonical: https://codebass.org` durante horas. Verificar siempre contra el HTML en vivo (`curl -s https://arqdata.cl | grep canonical`), nunca contra el panel.
 - Las variables de entorno **no se heredan del `.env.local`**: hay que cargarlas también en Vercel (Project → Settings → Environment Variables). Después de agregarlas hay que redeployar para que tomen efecto.
-- **DNS en Cloudflare.** Los registros de Vercel y los de Resend (DKIM/SPF/DMARC) van en **modo DNS-only (nube gris)**, nunca proxied: Cloudflare en naranja delante de Vercel rompe SSL y redirects.
+- **DNS en el panel de Vercel** (`arqdata.cl` está delegado a `ns1/ns2.vercel-dns.com`). Todos los registros —los de Vercel, los de Resend y los MX del reenvío de correo— se cargan ahí. **Cloudflare NO es el proveedor de DNS de este dominio**: aparece solo como destino de los MX (Email Routing), así que la vieja precaución de la "nube gris" no aplica acá.
 - Antes de pushear: `npm run build` y `npm run lint` en verde.
 
 ---
@@ -283,17 +286,23 @@ npm test
 
 ## Pendientes que bloquean el lanzamiento
 
-**Ya resuelto:** dominio (interino), repo y deploy en Vercel, GA4 midiendo, Calendly agendando.
+**Ya resuelto:** dominio definitivo (`arqdata.cl`), repo y deploy en Vercel, GA4 midiendo, DNS en Cloudflare con el subdominio `send.arqdata.cl` preparado para Resend.
 
-Decisiones y accesos que no dependen del código:
+Bloqueantes verificados contra producción el **2026-08-01** (contra el DNS y el HTML en vivo, no contra esta doc):
 
-- [ ] **Dominio definitivo de la consultora** — `codebass.org` es un puente. Cambiarlo después implica volver a tocar DNS, Resend y Search Console.
-- [ ] **Cuenta de Resend propia + dominio verificado** — hoy `CONTACTO_FROM` es el sandbox `onboarding@resend.dev`, que **solo entrega a la casilla dueña de la cuenta Resend**. Sin un dominio verificado no se puede notificar a ninguna otra casilla.
-- [ ] **Email profesional vs Gmail** — hoy `danichavez1882@gmail.com` es el email público del sitio y el destino de los leads.
+- [ ] 🔴 **`NEXT_PUBLIC_SITE_URL` sigue en `codebass.org`** — `arqdata.cl` sirve el sitio emitiendo `canonical`, `og:url` y `og:image` apuntando al dominio viejo, y `codebass.org` **no redirige: sirve el sitio completo en paralelo**. Dos dominios con contenido idéntico y ambos declarando canónico al viejo. Fix: setear la variable + **redeploy**, y convertir `codebass.org` en un 308 hacia `arqdata.cl`.
+- [ ] 🔴 **`NEXT_PUBLIC_CALENDLY_URL` sin setear en Vercel** — cero ocurrencias de `calendly` en el HTML publicado. **No "cae al `mailto`": la home no ofrece nada** — el fallback vive dentro de `CalendlyEmbed`, que solo se monta post-envío y en `/thank-you`. Es prerrequisito duro, no degradación elegante: la página tiene un solo trabajo y es agendar.
+- [ ] 🔴 **`CONTACTO_FROM` sigue en el sandbox `onboarding@resend.dev`**, que **solo entrega a la casilla dueña de la cuenta Resend**. **El 502 se cerró el 2026-08-09 cambiando el dueño de la cuenta a `contacto@arqdata.cl`** (+ `CONTACTO_TO` igual + redeploy), o sea el `to` literal ahora coincide. **Funciona, pero el sandbox sigue activo:** un solo destino posible (un segundo destinatario o el `ASSESSMENT_TO` de la Fase 2 vuelven a dar 502) y remitente sin alineación con el dominio. El DNS de `send.arqdata.cl` ya está puesto (SPF `include:amazonses.com` + MX de bounces en `sa-east-1`); falta confirmar la verificación en el panel de Resend y cambiar el remitente. **Es gratis** — el plan free incluye 1 dominio verificado, 3.000 correos/mes.
+  ⚠️ **Todo va en el subdominio `send.arqdata.cl`, nunca en el apex**, por dos razones independientes y las dos de falla silenciosa: el apex ya tiene el SPF de Cloudflare Email Routing (`include:_spf.mx.cloudflare.net`) y **solo puede existir un SPF TXT por dominio**; y un **MX de Resend en el apex secuestraría el correo entrante**, rompiendo el reenvío de las cuatro direcciones sin emitir error.
+- [ ] **Formulario sin probar en producción** — el endpoint responde y valida bien en vivo, pero nunca se envió un lead real desde el sitio publicado.
+- [ ] **El commit `5399f46` quedó fuera del PR #1** — **reaplicado sobre `main` el 2026-08-09, pendiente de commit/push/deploy.** Hasta que salga, el HTML en vivo no emite `theme-color` ni `color-scheme` y el fix de Samsung Internet no está en producción.
+
+Decisiones que no dependen del código:
+
+- [ ] **Email público del sitio** — hoy es `danichavez1882@gmail.com`. **`contacto@`, `dev@`, `daniela.chavez@` y `bastian.rodriguez@` en `arqdata.cl` reciben** vía Cloudflare Email Routing (2026-08-09), así que **la prohibición de poner `contacto@arqdata.cl` en `content/site.ts` queda levantada**: los `mailto:` y el JSON-LD solo necesitan que la dirección reciba. Dos cosas que siguen en pie: (1) **son reenvíos, no casillas** — no pueden *enviar* sin relay SMTP, así que responder *como* `contacto@` requiere configurar "Send mail as" en Gmail; (2) **que reciban no implica que Resend pueda enviarles**: el sandbox compara el `to` literal contra el dueño de la cuenta, así que `CONTACTO_TO` sigue siendo esa dirección hasta verificar el dominio. Es la causa del 502 de abajo.
 
 Pendientes técnicos conocidos:
 
-- [ ] **Formulario sin probar en producción** — el endpoint responde y valida bien en vivo, pero nunca se envió un lead real desde el sitio publicado. En local con el sandbox sí funcionó.
-- [ ] **Calendly como link, no como embed** — funciona, pero el plan original pedía el widget inline.
+- [ ] **Calendly como link, no como embed** — el plan original pedía el widget inline.
 - [ ] **Blog en MDX** — planificado, **no implementado**: no existen `app/blog/` ni `content/blog/`. La base ya está preparada: `lib/seo.ts` tiene la plantilla de títulos y `app/sitemap.ts` tiene la ruta `/blog` comentada, lista para descomentar.
 - [ ] **CI** — la suite existe pero nada la corre automáticamente. Falta un workflow de GitHub Actions con `tsc` + `lint` + `test` + `build` en cada push y PR; sin eso los tests se dejan de correr en dos semanas.

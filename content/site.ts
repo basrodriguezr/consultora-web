@@ -7,20 +7,24 @@ import { env, envUrl } from "@/lib/env";
 
 /**
  * URL pública del sitio. Se toma de la env var que Vercel inyecta; el fallback
- * es `codebass.org`, el dominio puente que usamos hoy.
+ * es `arqdata.cl`, el dominio definitivo de la consultora (2026-08-01).
  *
- * ⚠️ Tiene que ser **el dominio que Vercel sirve sin redirigir** (hoy el apex;
+ * ⚠️ Tiene que ser **el dominio que Vercel sirve sin redirigir** (el apex;
  * `www` redirige a él con 308). De esta variable salen canonical, `og:url`,
  * `sitemap.xml` y `robots.txt`: si declara un dominio que redirige, el 100% de
  * las URLs canónicas que publicamos son un 308. Verificar contra el sitio en
  * vivo, no contra el `.env`.
  *
- * Cuando se compre `arqdata.cl`: se cambia la env var en Vercel, este fallback,
- * y se verifica el dominio nuevo en Resend.
+ * ⚠️ Es `NEXT_PUBLIC_`, o sea que se **hornea en el build**: cambiarla en el
+ * panel de Vercel no surte efecto hasta que haya un deploy nuevo. Este fallback
+ * solo cubre el caso de que la variable falte.
+ *
+ * Historia: el sitio nació en `codebass.org` (dominio puente de Bastián). Ese
+ * dominio dejó de ser canónico y debe redirigir con 308 hacia `arqdata.cl`.
  */
 export const siteUrl = envUrl(
   process.env.NEXT_PUBLIC_SITE_URL,
-  "https://codebass.org",
+  "https://arqdata.cl",
 );
 
 export const site = {
@@ -38,9 +42,15 @@ export const site = {
   descripcionCorta:
     "Arquitectura de datos y automatización en AWS para empresas medianas en Chile.",
   /**
-   * ⚠️ Correo interino. `contacto@arqdata.cl` NO existe: el dominio todavía no
-   * está comprado, y un `mailto:` roto es peor que ninguno. No escribir esa
-   * dirección en el código hasta que el dominio esté verificado en Resend.
+   * ⚠️ Correo interino. El dominio ya existe y Cloudflare Email Routing está
+   * activo (MX `route*.mx.cloudflare.net`, verificado 2026-08-01), pero **eso
+   * es reenvío, no casillas**: solo funcionan las direcciones que tengan una
+   * regla de routing creada. Al 2026-08-01 constan `dev@` y
+   * `bastian.rodriguez@`; `contacto@arqdata.cl` **no está confirmado**.
+   *
+   * Este valor alimenta cuatro `mailto:` y dos campos del JSON-LD, así que un
+   * `mailto:` roto es peor que ninguno: no escribir `contacto@arqdata.cl` acá
+   * hasta haberle enviado un correo de prueba y haberlo recibido.
    */
   email: "danichavez1882@gmail.com",
   ciudad: "Santiago, Chile",
@@ -51,10 +61,16 @@ export const site = {
   /**
    * Link de la conversación de diagnóstico de 30 min.
    *
-   * ⚠️ Dejó de ser una degradación aceptable. En un sitio de 8 secciones, caer
-   * al `mailto` si esto está vacío era tolerable; en una página cuyo único
-   * trabajo es que alguien agende, es la falla completa y silenciosa. Es
-   * prerrequisito duro de despliegue: `/devops` la verifica en Vercel.
+   * ⚠️ Dejó de ser una degradación aceptable. En un sitio de 8 secciones, no
+   * tener agenda era tolerable; en una página cuyo único trabajo es que alguien
+   * agende, es la falla completa y silenciosa. Es prerrequisito duro de
+   * despliegue: `/devops` la verifica en Vercel.
+   *
+   * Y **no hay red debajo**: el fallback a `mailto` está en `CalendlyEmbed`,
+   * que solo se monta dentro de `Confirmacion` (post-envío) y en `/thank-you`.
+   * Los CTA del hero y del nav apuntan siempre a `#contacto`, con o sin este
+   * valor, así que con la variable vacía la home no ofrece **ninguna**
+   * alternativa hasta después de convertir.
    */
   calendly: env(process.env.NEXT_PUBLIC_CALENDLY_URL) ?? "",
 } as const;
