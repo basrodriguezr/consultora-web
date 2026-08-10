@@ -19,6 +19,12 @@ export interface Servicio {
   /** Identificador estable, usado como key de React. */
   slug: string;
   nombre: string;
+  /**
+   * ⚠️ Se emite tal cual en el JSON-LD público (`lib/seo.ts`, dentro de
+   * `itemOffered` del `OfferCatalog`), aunque hoy ninguna página lo muestre.
+   * O sea: **es texto indexable por Google**, y le aplica la misma regla que a
+   * `inversion` — sin cifras, ni de nuestros precios ni de los ajenos.
+   */
   descripcion: string;
   plazo: string;
   inversion: NivelInversion;
@@ -51,7 +57,7 @@ export const servicios: Servicio[] = [
   {
     slug: "data-governance",
     nombre: "Data Governance",
-    descripcion: "Contracts, calidad, catálogo, ownership — sin tools de $100K.",
+    descripcion: "Contracts, calidad, catálogo, ownership — sin suites enterprise.",
     plazo: "6-8 semanas",
     inversion: "alta",
   },
