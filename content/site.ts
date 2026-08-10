@@ -42,17 +42,22 @@ export const site = {
   descripcionCorta:
     "Arquitectura de datos y automatización en AWS para empresas medianas en Chile.",
   /**
-   * ⚠️ Correo interino. El dominio ya existe y Cloudflare Email Routing está
-   * activo (MX `route*.mx.cloudflare.net`, verificado 2026-08-01), pero **eso
-   * es reenvío, no casillas**: solo funcionan las direcciones que tengan una
-   * regla de routing creada. Al 2026-08-01 constan `dev@` y
-   * `bastian.rodriguez@`; `contacto@arqdata.cl` **no está confirmado**.
+   * Correo público de la consultora. Pasó del `@gmail` personal de Daniela a la
+   * dirección de marca el 2026-08-09, cuando ella confirmó que `contacto@`,
+   * `dev@`, `daniela.chavez@` y `bastian.rodriguez@` reciben.
    *
-   * Este valor alimenta cuatro `mailto:` y dos campos del JSON-LD, así que un
-   * `mailto:` roto es peor que ninguno: no escribir `contacto@arqdata.cl` acá
-   * hasta haberle enviado un correo de prueba y haberlo recibido.
+   * ⚠️ **Es reenvío (Cloudflare Email Routing), no casilla.** Solo funcionan
+   * las direcciones con una regla de routing creada, así que este valor no se
+   * cambia por otra `@arqdata.cl` sin haberle enviado un correo de prueba y
+   * haberlo recibido: alimenta tres `mailto:` y dos campos del JSON-LD, y un
+   * `mailto:` roto es peor que ninguno.
+   *
+   * ⚠️ **Que reciba no implica que Resend pueda enviarle.** Mientras la cuenta
+   * siga en sandbox, `CONTACTO_TO` compara contra el dueño literal de la
+   * cuenta y el ruteo del receptor le es invisible — este valor y esa env var
+   * son cosas distintas y pueden divergir sin que nada avise.
    */
-  email: "danichavez1882@gmail.com",
+  email: "contacto@arqdata.cl",
   ciudad: "Santiago, Chile",
   locale: "es_CL",
   lang: "es-CL",

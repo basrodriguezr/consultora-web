@@ -299,7 +299,7 @@ Bloqueantes verificados contra producción el **2026-08-01** (contra el DNS y el
 
 Decisiones que no dependen del código:
 
-- [ ] **Email público del sitio** — hoy es `danichavez1882@gmail.com`. **`contacto@`, `dev@`, `daniela.chavez@` y `bastian.rodriguez@` en `arqdata.cl` reciben** vía Cloudflare Email Routing (2026-08-09), así que **la prohibición de poner `contacto@arqdata.cl` en `content/site.ts` queda levantada**: los `mailto:` y el JSON-LD solo necesitan que la dirección reciba. Dos cosas que siguen en pie: (1) **son reenvíos, no casillas** — no pueden *enviar* sin relay SMTP, así que responder *como* `contacto@` requiere configurar "Send mail as" en Gmail; (2) **que reciban no implica que Resend pueda enviarles**: el sandbox compara el `to` literal contra el dueño de la cuenta, así que `CONTACTO_TO` sigue siendo esa dirección hasta verificar el dominio. Es la causa del 502 de abajo.
+- [x] **Email público del sitio** — ✅ **`contacto@arqdata.cl` desde el 2026-08-09** (`content/site.ts`), en reemplazo del `@gmail` personal de Daniela. Reciben `contacto@`, `dev@`, `daniela.chavez@` y `bastian.rodriguez@` vía Cloudflare Email Routing. Dos cosas que siguen en pie: (1) **son reenvíos, no casillas** — no pueden *enviar* sin relay SMTP, así que responder *como* `contacto@` requiere configurar "Send mail as" en Gmail; (2) **que reciban no implica que Resend pueda enviarles**: el sandbox compara el `to` literal contra el dueño de la cuenta, así que `CONTACTO_TO` es una decisión aparte de este valor. Es la causa del 502 de abajo.
 
 Pendientes técnicos conocidos:
 
