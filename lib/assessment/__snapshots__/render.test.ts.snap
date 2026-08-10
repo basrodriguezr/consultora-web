@@ -1,0 +1,165 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderPreDiagnostico — golden > congela el documento completo 1`] = `
+"Pre-diagnóstico preliminar — pendiente de validación en discovery
+
+**Acme SpA** · 9 de agosto de 2026
+
+---
+
+## 1. Resumen
+
+La consolidación mensual de reportes se hace a mano y depende de una sola persona. Lo primero sería centralizar la fuente de ventas y automatizar el reporte.
+
+**Madurez estimada:** 2 / 4 — hipótesis a partir del formulario, no una medición.
+**Proceso declarado:** 15-40 h/semana
+**Costo estimado del problema:** $93,6M CLP al año
+
+## 2. Lo que se puede inferir hoy
+
+**Hipótesis a verificar:**
+
+Sin una fuente única, cada área mantiene su propia copia.
+
+**Procesos manuales mencionados:**
+
+- **Consolidación mensual** — Tres días de una persona.
+
+**Calidad de datos (preliminar):**
+
+| Dimensión | Nivel | En qué se apoya | Impacto |
+| --- | --- | --- | --- |
+| completitud | [por confirmar en discovery] | [por confirmar en discovery] | Reportes incompletos. |
+| unicidad | 1 / 4 | Mencionan clientes repetidos. | Doble conteo. |
+| consistencia | [por confirmar en discovery] | [por confirmar en discovery] | Cifras que no cuadran entre áreas. |
+| vigencia | [por confirmar en discovery] | [por confirmar en discovery] | Se decide con datos de ayer. |
+
+## 3. Riesgos operacionales
+
+| Riesgo | Severidad | Impacto si ocurre |
+| --- | --- | --- |
+| Dependencia de una persona | alta | Si se va, nadie sabe rehacer el reporte. |
+| Errores de tipeo | media | Se decide sobre cifras equivocadas. |
+
+## 4. Tres quick wins propuestos
+
+| Qué hacer | Esfuerzo | Impacto |
+| --- | --- | --- |
+| Centralizar la fuente de ventas | 1 semana | Elimina la reconciliación manual. |
+| Automatizar el reporte mensual | 2 semanas | Libera tres días al mes. |
+| Validaciones en la carga | 3 días | Corta los errores de tipeo. |
+
+**Inversión del paquete:** $8–12M CLP (3-4 semanas)
+**Ahorro estimado año 1:** $46,8M CLP
+
+## 5. Siguiente paso sugerido
+
+**Quick Win** — $8–12M CLP, 3-4 semanas
+
+El dolor está acotado y se resuelve en semanas, no en meses.
+
+## 6. ★ Qué falta averiguar en discovery
+
+- ¿El ERP expone una API o solo permite exportar archivos?
+- ¿Cuántos registros duplicados hay en la base de clientes?
+- ¿Quién es hoy el dueño del dato de ventas?
+
+---
+
+_Lo que sigue es interno y no va al cliente._
+
+## 7. Señales de alerta
+
+- Ninguna detectada.
+
+## 8. Calificación del lead
+
+**a-evaluar**
+
+- Presupuesto: asignado
+- Urgencia: alta
+- Personas trabajando con datos: 4
+- Horas/semana declaradas: 15-40 (no participa de la regla)"
+`;
+
+exports[`renderPreDiagnostico — golden > congela la variante sin horas declaradas 1`] = `
+"Pre-diagnóstico preliminar — pendiente de validación en discovery
+
+**Acme SpA** · 9 de agosto de 2026
+
+---
+
+## 1. Resumen
+
+La consolidación mensual de reportes se hace a mano y depende de una sola persona. Lo primero sería centralizar la fuente de ventas y automatizar el reporte.
+
+**Madurez estimada:** 2 / 4 — hipótesis a partir del formulario, no una medición.
+**Proceso declarado:** [por confirmar en discovery]
+**Costo estimado del problema:** [por confirmar en discovery]
+
+## 2. Lo que se puede inferir hoy
+
+**Hipótesis a verificar:**
+
+[por confirmar en discovery]
+
+**Procesos manuales mencionados:**
+
+- **Consolidación mensual** — Tres días de una persona.
+
+**Calidad de datos (preliminar):**
+
+| Dimensión | Nivel | En qué se apoya | Impacto |
+| --- | --- | --- | --- |
+| completitud | [por confirmar en discovery] | [por confirmar en discovery] | Reportes incompletos. |
+| unicidad | 1 / 4 | Mencionan clientes repetidos. | Doble conteo. |
+| consistencia | [por confirmar en discovery] | [por confirmar en discovery] | Cifras que no cuadran entre áreas. |
+| vigencia | [por confirmar en discovery] | [por confirmar en discovery] | Se decide con datos de ayer. |
+
+## 3. Riesgos operacionales
+
+| Riesgo | Severidad | Impacto si ocurre |
+| --- | --- | --- |
+| Dependencia de una persona | alta | Si se va, nadie sabe rehacer el reporte. |
+| Errores de tipeo | media | Se decide sobre cifras equivocadas. |
+
+## 4. Tres quick wins propuestos
+
+| Qué hacer | Esfuerzo | Impacto |
+| --- | --- | --- |
+| Centralizar la fuente de ventas | 1 semana | Elimina la reconciliación manual. |
+| Automatizar el reporte mensual | 2 semanas | Libera tres días al mes. |
+| Validaciones en la carga | 3 días | Corta los errores de tipeo. |
+
+**Inversión del paquete:** $8–12M CLP (3-4 semanas)
+**Ahorro estimado año 1:** [por confirmar en discovery]
+
+## 5. Siguiente paso sugerido
+
+**Quick Win** — $8–12M CLP, 3-4 semanas
+
+El dolor está acotado y se resuelve en semanas, no en meses.
+
+## 6. ★ Qué falta averiguar en discovery
+
+- ¿El ERP expone una API o solo permite exportar archivos?
+- ¿Cuántos registros duplicados hay en la base de clientes?
+- ¿Quién es hoy el dueño del dato de ventas?
+
+---
+
+_Lo que sigue es interno y no va al cliente._
+
+## 7. Señales de alerta
+
+- Ninguna detectada.
+
+## 8. Calificación del lead
+
+**probablemente-no**
+
+- Presupuesto: asignado
+- Urgencia: alta
+- Personas trabajando con datos: 4
+- Horas/semana declaradas: no respondido (no participa de la regla)"
+`;
