@@ -4,6 +4,7 @@ import { servicios } from "@/content/servicios";
 import { rangoLegible } from "@/lib/assessment/catalogo-interno";
 import { calcularCifras, montoOPorConfirmar } from "@/lib/assessment/costos";
 import type { SalidaAssessment } from "@/lib/assessment/esquema";
+import { ETIQUETAS_HORAS } from "@/lib/leads";
 import type { Calificacion, LeadAssessmentNormalizado } from "@/lib/leads";
 
 /**
@@ -77,8 +78,20 @@ export function renderPreDiagnostico(
     salida.quickWins.map((q) => q.fraccionHorasLiberadas),
   );
 
+  /*
+   * ⚠️ El sufijo "h/semana" NO se puede pegar al valor crudo: con `"no-se"`
+   * emitía `"no-se h/semana"`, texto roto en la primera página del documento
+   * que lee Daniela. Los cuatro rangos numéricos sí toleraban el crudo, así que
+   * el defecto solo aparecía en la respuesta del cliente ideal — el que no midió
+   * cuánto le cuesta el proceso.
+   *
+   * `ETIQUETAS_HORAS` ya trae la unidad adentro ("Entre 5 y 15 horas"), así que
+   * el sufijo desaparece y `"no-se"` se lee como lo que es: "No lo tengo
+   * medido". Es una respuesta legítima, no un hueco, y `calificacion.ts` nunca
+   * descalifica por ella.
+   */
   const horasDeclaradas = lead.horasSemanaProceso
-    ? `${lead.horasSemanaProceso} h/semana`
+    ? ETIQUETAS_HORAS[lead.horasSemanaProceso]
     : POR_CONFIRMAR;
 
   /*

@@ -159,6 +159,28 @@ export const ETIQUETAS_URGENCIA: Record<"alta" | "media" | "baja", string> = {
   baja: "Baja",
 };
 
+/**
+ * Etiquetas de los rangos de horas.
+ *
+ * ⚠️ **`"no-se"` tiene que sonar legítimo, no evasivo** (plan de Fase 2, §15c).
+ * Dice "No lo tengo medido" y no "Prefiero no decir" ni "No sé" a secas, porque
+ * es la respuesta del cliente ideal: quien no midió cuánto le cuesta un proceso
+ * no tiene un problema chico, tiene falta de visibilidad. Redactarla como un
+ * descarte empuja a la persona a inventar un número, y ese número inventado
+ * termina multiplicado por 120.000 y por 52 en `lib/assessment/costos.ts`.
+ *
+ * Las usa el formulario **y el email**: sin este mapa la bandeja de Daniela
+ * recibe `"5-15"` pelado, que es exactamente el problema que estos `Record`
+ * existen para evitar.
+ */
+export const ETIQUETAS_HORAS: Record<RangoHoras, string> = {
+  "<5": "Menos de 5 horas",
+  "5-15": "Entre 5 y 15 horas",
+  "15-40": "Entre 15 y 40 horas",
+  ">40": "Más de 40 horas",
+  "no-se": "No lo tengo medido",
+};
+
 export const ETIQUETAS_EVALUANDO_CAMBIO: Record<
   "si" | "no" | "todavia-no",
   string

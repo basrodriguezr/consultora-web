@@ -162,6 +162,30 @@ describe("renderPreDiagnostico — las reglas de contenido", () => {
     expect(doc).not.toContain("$0,0M CLP");
   });
 
+  /**
+   * Regresión de un defecto real: el sufijo "h/semana" se pegaba al valor crudo
+   * del enum, así que `"no-se"` producía **`"no-se h/semana"`** en la primera
+   * página del documento.
+   *
+   * Pasó desapercibido porque el golden congela el caso `"15-40"` —donde el
+   * crudo se lee bien— y el único otro caso testeado era `undefined`, que toma
+   * la otra rama del ternario. **El valor roto era justo el del cliente ideal:**
+   * quien no midió cuánto le cuesta el proceso tiene falta de visibilidad, que
+   * es exactamente lo que vende la consultora.
+   *
+   * Se testea por texto y no por snapshot a propósito: un golden nuevo por cada
+   * rango congelaría cinco documentos completos para vigilar una línea.
+   */
+  it("traduce 'no-se' a una frase legible, sin pegarle la unidad al slug", () => {
+    const doc = renderPreDiagnostico(
+      lead({ horasSemanaProceso: "no-se" }),
+      salida(),
+      "a-evaluar",
+    );
+    expect(doc).toContain("**Proceso declarado:** No lo tengo medido");
+    expect(doc).not.toContain("no-se h/semana");
+  });
+
   it("deja la calificación y sus insumos en la parte interna", () => {
     const doc = renderPreDiagnostico(lead(), salida(), "probablemente-no");
     expect(doc).toContain("interno y no va al cliente");

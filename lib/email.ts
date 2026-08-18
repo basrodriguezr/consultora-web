@@ -6,6 +6,7 @@ import {
   ETIQUETAS_CLOUD,
   ETIQUETAS_EQUIPO,
   ETIQUETAS_EVALUANDO_CAMBIO,
+  ETIQUETAS_HORAS,
   ETIQUETAS_PRESUPUESTO,
   ETIQUETAS_URGENCIA,
   esCorreoPersonal,
@@ -123,10 +124,19 @@ function filasAssessment(lead: LeadAssessmentNormalizado): Fila[] {
     ["Personas con datos", String(lead.personasConDatos)],
     ["Cloud", ETIQUETAS_CLOUD[lead.cloud]],
     ["Fuentes de datos", lead.fuentesDatos.map(etiquetaFuenteDatos).join(", ")],
+    // Se sacó el sufijo "(declarado)" que acompañaba al rango crudo. Estaba ahí
+    // para que `"5-15"` —un token de datos— no se leyera como una medición
+    // nuestra; con la etiqueta el valor ya es prosa en la voz de quien respondió
+    // ("Entre 5 y 15 horas"), que se lee como respuesta y no como métrica.
+    // Sobre `"no-se"` el sufijo además se contradecía: "No lo tengo medido
+    // (declarado)". Y ninguna otra fila del email lleva caveat siendo todas
+    // igual de declaradas. Donde el número sí se convierte en plata
+    // (`lib/assessment/costos.ts` → pre-diagnóstico) el documento ya avisa por
+    // su cuenta: encabezado "preliminar" y la madurez marcada como hipótesis.
     [
       "Horas/semana del proceso",
       lead.horasSemanaProceso
-        ? `${lead.horasSemanaProceso} (declarado)`
+        ? ETIQUETAS_HORAS[lead.horasSemanaProceso]
         : "[no respondido]",
     ],
     ["Sponsor", opcional(lead.sponsor)],
