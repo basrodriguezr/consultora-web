@@ -77,7 +77,22 @@ export const salidaAssessmentSchema = z.object({
    */
   hipotesisCausaRaiz: z.string().max(400).nullable(),
 
-  /** Solo nombra y ordena. Las horas no las produce el modelo (ver `costos.ts`). */
+  /**
+   * Solo nombra y ordena. Las horas no las produce el modelo (ver `costos.ts`).
+   *
+   * ✅ **El `.min(1)` no empuja al modelo a inventar, y la razón está en el
+   * formulario, no acá.** Se revisó el 2026-08-18 porque parecía chocar con la
+   * primera regla del §9: un lead sin ningún proceso manual descrito obligaría a
+   * nombrar uno que no existe. **Ese lead no puede llegar:** `solucionActual` es
+   * obligatorio en `leadAssessmentSchema`, exige 10 caracteres y su pregunta es
+   * literalmente *"Cuéntanos cómo lo resuelven hoy"*. Siempre hay al menos una
+   * forma actual de hacer las cosas descrita en prosa, y nombrarla no es inventar:
+   * es leer.
+   *
+   * 🛑 **Si alguna vez `solucionActual` pasa a opcional, este mínimo tiene que
+   * bajar a 0 en el mismo commit** — son el mismo contrato visto desde los dos
+   * extremos.
+   */
   procesosManuales: z
     .array(
       z.object({
