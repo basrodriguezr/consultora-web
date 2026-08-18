@@ -286,20 +286,26 @@ npm test
 
 ## Pendientes que bloquean el lanzamiento
 
-**Ya resuelto:** dominio definitivo (`arqdata.cl`), repo y deploy en Vercel, GA4 midiendo, DNS en Cloudflare con el subdominio `send.arqdata.cl` preparado para Resend.
+**Ya resuelto:** dominio definitivo (`arqdata.cl`), repo y deploy en Vercel, GA4 midiendo, **Resend enviando** y **el formulario entregando punta a punta**.
 
-Bloqueantes verificados contra producción el **2026-08-01** (contra el DNS y el HTML en vivo, no contra esta doc):
+> 🛑 **Dos cosas que NO son pendientes y se reabrieron por error varias veces:**
+> 1. **Resend está listo.** Envía y los correos llegan. No proponer verificar dominios ni tocar `CONTACTO_FROM`.
+> 2. **`codebass.org` NO debe redirigir.** Sirve el sitio en paralelo **a propósito**: es una réplica que nadie visita.
 
-- [ ] 🔴 **`NEXT_PUBLIC_SITE_URL` sigue en `codebass.org`** — `arqdata.cl` sirve el sitio emitiendo `canonical`, `og:url` y `og:image` apuntando al dominio viejo, y `codebass.org` **no redirige: sirve el sitio completo en paralelo**. Dos dominios con contenido idéntico y ambos declarando canónico al viejo. Fix: setear la variable + **redeploy**, y convertir `codebass.org` en un 308 hacia `arqdata.cl`.
-- [ ] 🔴 **`NEXT_PUBLIC_CALENDLY_URL` sin setear en Vercel** — cero ocurrencias de `calendly` en el HTML publicado. **No "cae al `mailto`": la home no ofrece nada** — el fallback vive dentro de `CalendlyEmbed`, que solo se monta post-envío y en `/thank-you`. Es prerrequisito duro, no degradación elegante: la página tiene un solo trabajo y es agendar.
-- [ ] 🔴 **`CONTACTO_FROM` sigue en el sandbox `onboarding@resend.dev`**, que **solo entrega a la casilla dueña de la cuenta Resend**. **El 502 se cerró el 2026-08-09 cambiando el dueño de la cuenta a `contacto@arqdata.cl`** (+ `CONTACTO_TO` igual + redeploy), o sea el `to` literal ahora coincide. **Funciona, pero el sandbox sigue activo:** un solo destino posible (un segundo destinatario o el `ASSESSMENT_TO` de la Fase 2 vuelven a dar 502) y remitente sin alineación con el dominio. El DNS de `send.arqdata.cl` ya está puesto (SPF `include:amazonses.com` + MX de bounces en `sa-east-1`); falta confirmar la verificación en el panel de Resend y cambiar el remitente. **Es gratis** — el plan free incluye 1 dominio verificado, 3.000 correos/mes.
-  ⚠️ **Todo va en el subdominio `send.arqdata.cl`, nunca en el apex**, por dos razones independientes y las dos de falla silenciosa: el apex ya tiene el SPF de Cloudflare Email Routing (`include:_spf.mx.cloudflare.net`) y **solo puede existir un SPF TXT por dominio**; y un **MX de Resend en el apex secuestraría el correo entrante**, rompiendo el reenvío de las cuatro direcciones sin emitir error.
-- [ ] **Formulario sin probar en producción** — el endpoint responde y valida bien en vivo, pero nunca se envió un lead real desde el sitio publicado.
-- [ ] **El commit `5399f46` quedó fuera del PR #1** — **reaplicado sobre `main` el 2026-08-09, pendiente de commit/push/deploy.** Hasta que salga, el HTML en vivo no emite `theme-color` ni `color-scheme` y el fix de Samsung Internet no está en producción.
+Estado verificado contra producción el **2026-08-11** (contra el DNS y el HTML en vivo, no contra esta doc):
+
+- [x] ✅ **`NEXT_PUBLIC_SITE_URL` apunta a `arqdata.cl`** — `canonical` en vivo = `https://arqdata.cl`. *(Queda alinear el fallback de `content/site.ts`.)*
+- [x] ✅ **`NEXT_PUBLIC_CALENDLY_URL` seteada y funcionando** en los dos proyectos Vercel (verificado el 2026-08-09 contra `/thank-you` en vivo: el iframe se sirve con `embed_type=Inline` y sin bloque de fallback).
+
+  ⚠️ **No se verifica grepeando la home**: `site.calendly` lo consume solo `CalendlyEmbed`, que se monta en `Confirmacion` (post-envío) y en `/thank-you`. Un `grep calendly` a la home da 0 aunque la variable esté perfecta — ese falso negativo estuvo tres documentos y ocho días. **El comando correcto es `curl https://<dominio>/thank-you | grep calendly`.**
+- [x] ✅ **Resend enviando desde el dominio propio** — DNS completo y verificado: SPF `include:amazonses.com` en `send.arqdata.cl`, MX de bounces a `feedback-smtp.sa-east-1.amazonses.com`, DKIM en `resend._domainkey.arqdata.cl`, DMARC `p=none`, apex con el SPF de Cloudflare intacto.
+  ℹ️ Las dos trampas que se temían **no ocurrieron**: Resend pone SPF y MX en el subdominio `send.` por su cuenta, así que el apex nunca tuvo que fusionar SPF ni recibió un MX que secuestrara el correo entrante de Cloudflare Email Routing.
+- [x] ✅ **Formulario probado punta a punta en producción** — los correos llegan (2026-08-09).
+- [x] ✅ **El fix `5399f46` está en producción** — entró por el PR #5; el HTML en vivo emite `theme-color` por esquema y `color-scheme: light dark`. El fix del oscurecido forzado de Samsung Internet está desplegado.
 
 Decisiones que no dependen del código:
 
-- [x] **Email público del sitio** — ✅ **`contacto@arqdata.cl` desde el 2026-08-09** (`content/site.ts`), en reemplazo del `@gmail` personal de Daniela. Reciben `contacto@`, `dev@`, `daniela.chavez@` y `bastian.rodriguez@` vía Cloudflare Email Routing. Dos cosas que siguen en pie: (1) **son reenvíos, no casillas** — no pueden *enviar* sin relay SMTP, así que responder *como* `contacto@` requiere configurar "Send mail as" en Gmail; (2) **que reciban no implica que Resend pueda enviarles**: el sandbox compara el `to` literal contra el dueño de la cuenta, así que `CONTACTO_TO` es una decisión aparte de este valor. Es la causa del 502 de abajo.
+- [x] **Email público del sitio** — ✅ **`contacto@arqdata.cl` desde el 2026-08-09** (`content/site.ts`), en reemplazo del `@gmail` personal de Daniela. Reciben `contacto@`, `dev@`, `daniela.chavez@` y `bastian.rodriguez@` vía Cloudflare Email Routing. Una cosa sigue en pie: **son reenvíos, no casillas** — no pueden *enviar* sin relay SMTP, así que responder *como* `contacto@` requiere configurar "Send mail as" en Gmail. *(Lo de "que reciban no implica que Resend pueda enviarles" quedó obsoleto: Resend está verificado y entrega.)*
 
 Pendientes técnicos conocidos:
 
