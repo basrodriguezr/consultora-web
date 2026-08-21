@@ -16,24 +16,24 @@ export interface Paso {
   descripcion: string;
 }
 
-export const tituloProceso = "Cómo funciona";
+export const tituloProceso = "3 pasos. Sin compromiso anticipado.";
 
 export const proceso: Paso[] = [
   {
     numero: "01",
-    titulo: "Conversación",
+    titulo: "Conversación de 30 minutos",
     descripcion:
-      "30 minutos para entender tu dolor. Gratis, sin presentaciones de 40 páginas. Sin compromiso.",
+      "Entendemos tu dolor. Sin presentaciones de 40 páginas. Te decimos honestamente si podemos ayudar o no.",
   },
   {
     numero: "02",
-    titulo: "Propuesta en 48h",
-    descripcion: "Alcance, timeline y precio claro. Sin letra chica.",
+    titulo: "Propuesta clara en 48 horas",
+    descripcion: "Alcance, plazo y precio. Sin letra chica, sin sorpresas.",
   },
   {
     numero: "03",
     titulo: "Implementación en tu cuenta",
     descripcion:
-      "Código tuyo, infraestructura tuya. Si no nos necesitas más, sigues operando.",
+      "Código tuyo, infra tuya. Cuando terminamos, sigues operando sin nosotros.",
   },
 ];
