@@ -22,16 +22,16 @@
  * hablar en números. Mientras tanto, la promesa es concreta pero no numérica.
  */
 export const hero = {
-  titulo: "Eliminamos los procesos manuales de datos",
-  tituloDestacado: "que tu equipo rehace todas las semanas.",
+  titulo: "¿Tu equipo sigue armando reportes a mano",
+  tituloDestacado: "todas las semanas?",
   bajada:
-    "Diagnóstico en 2 semanas. Implementación en tu cuenta AWS. Sin dependencia, sin licencias de terceros, sin sorpresas.",
+    "En 2 semanas te decimos qué se puede automatizar y qué dejar como está. Sin cambiar de sistema, sin dependencia, sin sorpresas.",
   /**
    * Línea de credenciales bajo el CTA. Se renderiza en `--font-mono` y en
    * `text-subtle`: es prueba, no titular.
    */
   proof: [
-    "AWS Certified",
+    "Cloud Certified",
     "Producción en industria regulada",
     "Resultados en semanas, no meses",
   ],

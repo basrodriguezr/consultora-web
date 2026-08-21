@@ -17,31 +17,31 @@ export interface Dolor {
   acento: Acento;
 }
 
-export const tituloDolor = "¿Alguna de estas te suena familiar?";
+export const tituloDolor = "¿Te suena alguna de estas?";
 
 export const dolores: Dolor[] = [
   {
-    titulo: "Costos cloud sin visibilidad",
+    titulo: "La factura cloud crece y nadie puede explicar en qué se va",
     descripcion:
-      "La factura de AWS crece cada mes pero nadie en tu equipo puede explicar por qué ni atribuirla por proyecto.",
+      "Tu equipo paga la cuenta pero no sabe qué apagar ni qué cuesta cada proyecto.",
     icono: "moneda",
     acento: "marca",
   },
   {
-    titulo: "Reportes que dependen de una persona",
+    titulo: "Si esa persona se va, nadie sabe replicar el reporte",
     descripcion:
-      "Hay un proceso crítico que solo alguien del equipo sabe hacer. Si esa persona se va, el reporte no sale.",
+      "Hay un proceso crítico que vive en la cabeza de alguien. Y funciona... hasta que no.",
     icono: "reloj",
     acento: "calido",
   },
   {
-    titulo: "Datos que nadie confía",
+    titulo: "Cada área tiene su Excel y ningún número coincide",
     descripcion:
-      "El equipo pasa más tiempo reconciliando planillas que tomando decisiones. Cada área tiene 'su verdad'.",
+      "Gerencia pide un dato y recibe 3 versiones. Nadie sabe cuál es la buena.",
     icono: "grafico",
     acento: "agua",
   },
 ];
 
 export const cierreDolor =
-  "Cada uno de estos problemas tiene un costo medible. Y se resuelve en semanas — no en meses ni en millones.";
+  "Cada uno se resuelve en semanas. Sin cambiar de sistema.";

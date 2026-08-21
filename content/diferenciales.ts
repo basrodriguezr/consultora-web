@@ -21,27 +21,27 @@ export interface Diferencial {
   acento: Acento;
 }
 
-export const tituloDiferencial = "Por qué no somos una consultora más";
+export const tituloDiferencial = "¿Por qué nosotros y no una consultora grande?";
 
 export const diferenciales: Diferencial[] = [
   {
-    titulo: "Profesionales senior, directo",
+    titulo: "La persona que habla contigo es la que ejecuta",
     descripcion:
-      "Quien lidera tu proyecto es quien lo ejecuta. Sin capas de gestión, sin juniors rotando, sin traspasos entre equipos.",
+      "Sin capas de gestión, sin juniors rotando. Tú hablas con un senior y ese senior se mete al sistema.",
     icono: "persona",
     acento: "marca",
   },
   {
-    titulo: "Cero dependencia",
+    titulo: "Todo queda en tu cuenta",
     descripcion:
-      "Todo en tu cuenta AWS. Terraform, CI/CD, código documentado. Si terminamos y no nos necesitas, sigues operando solo.",
+      "Código tuyo, infraestructura tuya, documentación tuya. Si no nos necesitas más, sigues operando solo.",
     icono: "candado",
     acento: "alterno",
   },
   {
-    titulo: "Riesgo acotado",
+    titulo: "Empezamos con un diagnóstico acotado",
     descripcion:
-      "Empezamos con un diagnóstico de 2 semanas. Si no encontramos valor concreto, no te proponemos nada más.",
+      "2 semanas. Si no encontramos valor concreto, no te proponemos nada más. Así de simple.",
     icono: "diana",
     acento: "calido",
   },

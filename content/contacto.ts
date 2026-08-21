@@ -10,7 +10,7 @@
  */
 
 export const contacto = {
-  titulo: "¿Cuánto te están costando los procesos manuales?",
+  titulo: "¿Qué haría tu equipo si esos reportes se armaran solos?",
   bajada:
     "30 minutos de conversación. Te damos una perspectiva honesta de si lo que hacemos aplica para tu caso — o no.",
 } as const;

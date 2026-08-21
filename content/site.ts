@@ -33,14 +33,14 @@ export const site = {
    * El JSON-LD acompaña: `Organization`, no `Person`.
    */
   nombre: "ArqData",
-  rol: "Arquitectura de Datos en AWS",
+  rol: "Arquitectura de Datos en la Nube",
   /** Se renderiza como texto en el nav y en la imagen Open Graph. */
   logotipo: "ArqData",
-  titulo: "ArqData — Arquitectura de Datos en AWS · Chile",
+  titulo: "ArqData — Arquitectura de Datos en la Nube · Chile",
   descripcion:
-    "Eliminamos los procesos manuales de datos que le cuestan a tu empresa miles de horas al año. Diagnóstico en 2 semanas, implementación en tu propia cuenta AWS. Empresas medianas en Chile.",
+    "Eliminamos los procesos manuales de datos que le cuestan a tu empresa miles de horas al año. Diagnóstico en 2 semanas, implementación en tu propia cuenta cloud. Empresas medianas en Chile.",
   descripcionCorta:
-    "Arquitectura de datos y automatización en AWS para empresas medianas en Chile.",
+    "Arquitectura de datos y automatización en la nube para empresas medianas en Chile.",
   /**
    * Correo público de la consultora. Pasó del `@gmail` personal de Daniela a la
    * dirección de marca el 2026-08-09, cuando ella confirmó que `contacto@`,
@@ -87,7 +87,7 @@ export const site = {
 export const cta = {
   texto: "Agendar Conversación",
   /** Variante larga, solo para el botón del hero. */
-  textoLargo: "Agendar Conversación de Diagnóstico — 30 min",
+  textoLargo: "Agendar conversación — 30 min, sin compromiso",
   destino: "#contacto",
 } as const;
 
