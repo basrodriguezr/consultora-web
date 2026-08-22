@@ -85,6 +85,11 @@ export default function Hero() {
               </Fragment>
             ))}
           </p>
+
+          {/* Strip de industrias — auto-segmentación del visitante */}
+          <p className="mt-4 font-mono text-xs text-subtle">
+            Empresas medianas en: Retail · Inmobiliaria · Servicios · Logística · Manufactura
+          </p>
         </div>
       </div>
     </section>

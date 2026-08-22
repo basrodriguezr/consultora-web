@@ -1,11 +1,11 @@
+import DiagramaFlujo from "@/components/DiagramaFlujo";
 import { proceso, subtituloProceso, tituloProceso } from "@/content/proceso";
 
 /**
- * Sección 6 — "Cómo funciona": los tres pasos de `content/proceso.ts`.
+ * Sección 6 — "Cómo funciona": diagrama de flujo + los tres pasos.
  *
- * Es una lista **ordenada** (`<ol>`) y no un grid de `div`: el orden es el
- * contenido. Quien navega con lector de pantalla escucha "1 de 3" aunque no vea
- * el numerador grande.
+ * El diagrama va primero: le da al visitante la foto completa en 2 segundos.
+ * Los pasos detallados van debajo para quien quiere leer.
  *
  * Server Component: solo datos y markup.
  */
@@ -22,6 +22,9 @@ export default function Proceso() {
         <p className="text-muted mb-12 max-w-2xl">
           {subtituloProceso}
         </p>
+
+        {/* Diagrama de flujo visual — resumen en 2 segundos */}
+        <DiagramaFlujo />
 
         {/* Vertical en móvil, tres columnas en desktop. */}
         <ol className="grid gap-10 md:grid-cols-3 md:gap-8">
