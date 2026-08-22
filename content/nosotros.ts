@@ -1,20 +1,21 @@
 /**
  * Sección "Quiénes somos".
  *
- * Voz plural y por rol, sin nombres propios — es la narrativa aprobada
- * (2026-07-23) y la que sostiene que la marca sea `ArqData` y no una persona.
+ * No dar número de personas. Transmitir: equipo senior, combinación rara
+ * (datos + dev + IA), enfocado, comprometido. El tamaño se siente como
+ * virtud (agilidad, dedicación) no como limitación.
  */
 
 export const nosotros = {
   titulo: "Quiénes somos",
   parrafos: [
-    "8 años en producción con datos en industria regulada. La persona que habla contigo es la misma que se mete al sistema.",
-    "Consultora chica, enfocada en empresas medianas en Chile. Sin intermediarios. Sin rotación. Sin sorpresas.",
+    "Un equipo técnico senior que combina arquitectura de datos, desarrollo e inteligencia artificial. Eso nos permite resolver el problema completo: desde el dato crudo hasta el producto funcionando en tu operación.",
+    "Trabajamos directo, sin intermediarios. Si necesitamos más manos para un proyecto, las traemos — pero quien responde somos nosotros. Nos quedamos hasta que tu equipo opere solo.",
   ],
   /** Se renderizan como badges en línea, en `--font-mono`. */
   credenciales: [
     "Cloud Certified",
-    "Producción en industria regulada",
-    "Ingeniería Civil Informática",
+    "8+ años en producción real",
+    "Datos + Desarrollo + IA",
   ],
 } as const;

@@ -1,39 +1,50 @@
 /**
- * Cómo funciona — tres pasos.
+ * Cómo funciona — tres pasos con timeline explícito.
  *
- * Pasó de 5 pasos a 3 en el rediseño (2026-07-31): los pasos 4 y 5 (entrega y
- * soporte) describían el después de la venta y le restaban peso al único
- * objetivo de la página, que es que alguien agende la conversación.
+ * Cada paso ahora tiene `tiempo` para reducir la incertidumbre del comprador
+ * ("¿cuánto de mi tiempo me va a costar?") y `detalle` con una frase que baja
+ * la fricción percibida.
  *
  * `numero` es string (`"01"`) y no number a propósito: se renderiza en
- * `--font-mono` con el cero a la izquierda, y es el detalle que sostiene el
- * carácter "terminal" del tema sin repintar nada de ámbar.
+ * `--font-mono` con el cero a la izquierda.
  */
 
 export interface Paso {
   numero: string;
   titulo: string;
   descripcion: string;
+  /** Indicador de tiempo / esfuerzo para el prospecto. */
+  tiempo: string;
+  /** Frase que elimina una fricción específica de ese paso. */
+  garantia: string;
 }
 
-export const tituloProceso = "3 pasos. Sin compromiso anticipado.";
+export const tituloProceso = "Cómo funciona";
+export const subtituloProceso = "De la conversación al resultado en menos de un mes";
 
 export const proceso: Paso[] = [
   {
     numero: "01",
-    titulo: "Conversación de 30 minutos",
+    titulo: "Conversación de diagnóstico",
     descripcion:
-      "Entendemos tu dolor. Sin presentaciones de 40 páginas. Te decimos honestamente si podemos ayudar o no.",
+      "30 minutos para entender tu operación y tus dolores. Sin presentaciones de 40 páginas, sin pitch de venta.",
+    tiempo: "30 min · gratis",
+    garantia: "Si no aplica lo que hacemos, te lo decimos ahí mismo.",
   },
   {
     numero: "02",
-    titulo: "Propuesta clara en 48 horas",
-    descripcion: "Alcance, plazo y precio. Sin letra chica, sin sorpresas.",
+    titulo: "Propuesta con alcance y precio cerrado",
+    descripcion:
+      "En 48 horas recibes un documento con qué vamos a hacer, cuánto toma y cuánto cuesta. Sin ambigüedades.",
+    tiempo: "48 horas",
+    garantia: "Precio fijo. Sin extras, sin letra chica.",
   },
   {
     numero: "03",
-    titulo: "Implementación en tu cuenta",
+    titulo: "Diagnóstico + quick wins en tu cuenta",
     descripcion:
-      "Código tuyo, infra tuya. Cuando terminamos, sigues operando sin nosotros.",
+      "Entramos a tu infraestructura, documentamos el estado real y te entregamos un roadmap priorizado con 3 acciones inmediatas.",
+    tiempo: "2 semanas",
+    garantia: "Todo en tu cuenta cloud. Si no encontramos valor, no seguimos.",
   },
 ];

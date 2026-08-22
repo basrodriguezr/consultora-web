@@ -104,6 +104,9 @@ export default function Diferencial() {
                   {ICONO[diferencial.icono]}
                 </svg>
               </div>
+              <p className="text-xs text-subtle italic mb-3">
+                {diferencial.objecion}
+              </p>
               <h3 className="font-semibold mb-2">{diferencial.titulo}</h3>
               <p className="text-sm text-muted leading-relaxed">
                 {diferencial.descripcion}
