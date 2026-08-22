@@ -31,8 +31,7 @@ export default function Hero() {
             usa en un tramo corto y nunca como único medio de comunicar algo.
           */}
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight text-fg mb-6">
-            {hero.titulo}
-            <br />
+            {hero.titulo}{" "}
             <span className="text-gradient">{hero.tituloDestacado}</span>
           </h1>
 
