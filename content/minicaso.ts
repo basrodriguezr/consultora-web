@@ -22,9 +22,9 @@ export interface MetricaCaso {
 
 export const minicaso = {
   etiqueta: "Ejemplo real de diagnóstico",
-  titulo: "Marketplace con 100K clientes. ¿Dónde están sus datos personales?",
+  titulo: "Empresa con 100K clientes. ¿Dónde están sus datos personales?",
   contexto:
-    "Escaneamos la base de datos de un e-commerce con 100K clientes y 3K vendedores. La Ley 21.719 entra en vigencia en 3 meses. Esto es lo que encontramos:",
+    "Escaneamos la base de datos de una empresa con 100K clientes y 3K proveedores. La Ley 21.719 entra en vigencia en 3 meses. Esto es lo que encontramos:",
   metricas: [
     {
       cifra: "6 de 9",

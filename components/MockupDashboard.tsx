@@ -70,7 +70,7 @@ export default function MockupDashboard() {
         {/* KPI cards */}
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-[#1a1d27] rounded-lg p-3 border border-white/5">
-            <p className="text-[10px] text-[#6b6b6b] mb-1">Tablas con PII</p>
+            <p className="text-[10px] text-[#6b6b6b] mb-1">Datos personales</p>
             <p className="font-mono text-xl font-bold text-[#ff6b6b]">6<span className="text-sm text-[#6b6b6b]">/9</span></p>
           </div>
           <div className="bg-[#1a1d27] rounded-lg p-3 border border-white/5">
