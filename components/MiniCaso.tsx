@@ -42,6 +42,47 @@ export default function MiniCaso() {
           ))}
         </div>
 
+        {/* Mini-dashboard visual — score de compliance */}
+        <div className="bg-panel border border-line rounded-xl p-6 sm:p-8 mb-12">
+          <div className="flex flex-col sm:flex-row items-center gap-8">
+            {/* Score circular */}
+            <div className="shrink-0 w-32 h-32 rounded-full border-4 border-error/30 flex items-center justify-center relative">
+              <div className="text-center">
+                <p className="font-mono text-3xl font-bold text-error">32</p>
+                <p className="text-xs text-subtle">de 100</p>
+              </div>
+            </div>
+            {/* Alertas */}
+            <div className="flex-1 space-y-3 w-full">
+              <p className="font-semibold text-fg text-sm mb-3">Alertas detectadas</p>
+              <div className="flex items-start gap-3 bg-error/5 border-l-2 border-error rounded-r-lg p-3">
+                <span className="text-error text-sm shrink-0">●</span>
+                <div>
+                  <p className="text-sm text-fg font-medium">6 tablas con datos personales sin clasificar</p>
+                  <p className="text-xs text-subtle">Sin política de retención definida</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-error/5 border-l-2 border-error rounded-r-lg p-3">
+                <span className="text-error text-sm shrink-0">●</span>
+                <div>
+                  <p className="text-sm text-fg font-medium">1M+ registros de geolocalización expuestos</p>
+                  <p className="text-xs text-subtle">Dato personal por combinación — Ley 21.719 Art. 2</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-warmth/5 border-l-2 border-warmth rounded-r-lg p-3">
+                <span className="text-warmth text-sm shrink-0">●</span>
+                <div>
+                  <p className="text-sm text-fg font-medium">100K textos libres sin sanitizar</p>
+                  <p className="text-xs text-subtle">Pueden contener nombres, emails y teléfonos</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="mt-6 text-xs text-subtle text-center sm:text-left">
+            Output real del scanner de ArqData sobre base de datos de e-commerce (100K clientes)
+          </p>
+        </div>
+
         {/* Entregables — qué recibes concretamente */}
         <div className="bg-panel border border-line rounded-xl p-6 sm:p-8 max-w-2xl">
           <h3 className="font-semibold text-fg mb-4">
@@ -57,7 +98,7 @@ export default function MiniCaso() {
           </ul>
         </div>
 
-        <p className="mt-10 text-sm sm:text-base text-muted max-w-2xl leading-relaxed italic">
+        <p className="mt-10 text-sm sm:text-base text-fg max-w-2xl leading-relaxed">
           {minicaso.cierre}
         </p>
 

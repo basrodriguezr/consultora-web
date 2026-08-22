@@ -47,7 +47,7 @@ export const dolores: Dolor[] = [
     titulo: "La factura cloud crece y nadie puede explicar en qué se va",
     descripcion:
       "Tu equipo paga la cuenta pero no sabe qué apagar ni qué cuesta cada proyecto. Finanzas pregunta y TI no tiene respuesta.",
-    costo: "$2-6M CLP/mes en recursos cloud sin atribuir",
+    costo: "Plata que se va sin saber en qué",
     icono: "moneda",
     acento: "marca",
   },

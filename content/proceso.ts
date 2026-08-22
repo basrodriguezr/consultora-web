@@ -41,7 +41,7 @@ export const proceso: Paso[] = [
   },
   {
     numero: "03",
-    titulo: "Diagnóstico + quick wins en tu cuenta",
+    titulo: "Diagnóstico + primeras mejoras en tu cuenta",
     descripcion:
       "Entramos a tu infraestructura, documentamos el estado real y te entregamos un roadmap priorizado con 3 acciones inmediatas.",
     tiempo: "2 semanas",
