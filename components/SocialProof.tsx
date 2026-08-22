@@ -46,7 +46,7 @@ export default function SocialProof() {
           ))}
         </div>
 
-        <p className="mt-12 text-center text-sm sm:text-base text-muted max-w-2xl mx-auto leading-relaxed">
+        <p className="mt-12 text-center text-sm sm:text-base text-fg max-w-2xl mx-auto leading-relaxed">
           {cierreSocialProof}
         </p>
       </div>

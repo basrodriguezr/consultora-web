@@ -21,32 +21,15 @@ export default function MiniCaso() {
         <h2 className="text-2xl sm:text-3xl font-semibold text-fg mb-4 max-w-3xl tracking-tight">
           {minicaso.titulo}
         </h2>
-        <p className="text-muted mb-10 max-w-2xl leading-relaxed">
+        <p className="text-fg mb-10 max-w-2xl leading-relaxed">
           {minicaso.contexto}
         </p>
 
-        {/* Métricas del scan — impacto visual rápido */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-12">
-          {minicaso.metricas.map((metrica) => (
-            <div
-              key={metrica.cifra}
-              className="bg-panel border border-line rounded-xl p-5"
-            >
-              <p className="font-mono text-2xl sm:text-3xl font-bold text-brand-500 mb-2">
-                {metrica.cifra}
-              </p>
-              <p className="text-sm text-muted leading-relaxed">
-                {metrica.descripcion}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Mini-dashboard visual — score de compliance */}
+        {/* Mini-dashboard visual — score de compliance + alertas */}
         <div className="bg-panel border border-line rounded-xl p-6 sm:p-8 mb-12">
           <div className="flex flex-col sm:flex-row items-center gap-8">
             {/* Score circular */}
-            <div className="shrink-0 w-32 h-32 rounded-full border-4 border-error/30 flex items-center justify-center relative">
+            <div className="shrink-0 w-32 h-32 rounded-full border-4 border-error/30 flex items-center justify-center">
               <div className="text-center">
                 <p className="font-mono text-3xl font-bold text-error">32</p>
                 <p className="text-xs text-subtle">de 100</p>
@@ -59,27 +42,27 @@ export default function MiniCaso() {
                 <span className="text-error text-sm shrink-0">●</span>
                 <div>
                   <p className="text-sm text-fg font-medium">6 tablas con datos personales sin clasificar</p>
-                  <p className="text-xs text-subtle">Sin política de retención definida</p>
+                  <p className="text-xs text-muted">Sin política de retención definida</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 bg-error/5 border-l-2 border-error rounded-r-lg p-3">
                 <span className="text-error text-sm shrink-0">●</span>
                 <div>
                   <p className="text-sm text-fg font-medium">1M+ registros de geolocalización expuestos</p>
-                  <p className="text-xs text-subtle">Dato personal por combinación — Ley 21.719 Art. 2</p>
+                  <p className="text-xs text-muted">Dato personal por combinación — Ley 21.719 Art. 2</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 bg-warmth/5 border-l-2 border-warmth rounded-r-lg p-3">
                 <span className="text-warmth text-sm shrink-0">●</span>
                 <div>
                   <p className="text-sm text-fg font-medium">100K textos libres sin sanitizar</p>
-                  <p className="text-xs text-subtle">Pueden contener nombres, emails y teléfonos</p>
+                  <p className="text-xs text-muted">Pueden contener nombres, emails y teléfonos</p>
                 </div>
               </div>
             </div>
           </div>
-          <p className="mt-6 text-xs text-subtle text-center sm:text-left">
-            Output real del scanner de ArqData sobre base de datos de e-commerce (100K clientes)
+          <p className="mt-6 text-xs text-muted text-center sm:text-left">
+            Output del scanner de ArqData sobre base de datos de e-commerce (100K clientes)
           </p>
         </div>
 
@@ -90,7 +73,7 @@ export default function MiniCaso() {
           </h3>
           <ul className="space-y-3">
             {minicaso.entregables.map((item) => (
-              <li key={item} className="flex gap-3 text-sm text-muted">
+              <li key={item} className="flex gap-3 text-sm text-fg">
                 <span className="text-exito shrink-0 mt-0.5" aria-hidden="true">✓</span>
                 <span className="leading-relaxed">{item}</span>
               </li>
