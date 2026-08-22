@@ -49,7 +49,7 @@ export default function MiniCaso() {
           </ul>
         </div>
 
-        <p className="mt-10 text-sm sm:text-base max-w-2xl leading-relaxed font-semibold text-brand-500">
+        <p className="mt-10 text-sm sm:text-base max-w-2xl leading-relaxed font-semibold text-fg">
           {minicaso.cierre}
         </p>
 
