@@ -15,7 +15,6 @@ export const nosotros = {
   /** Se renderizan como badges en línea, en `--font-mono`. */
   credenciales: [
     "Cloud Certified",
-    "8+ años en producción real",
     "Datos + Desarrollo + IA",
   ],
 } as const;

@@ -33,7 +33,7 @@ export const diferenciales: Diferencial[] = [
     titulo: "La persona que habla contigo es la que ejecuta",
     objecion: "\"¿Puedes con esto? ¿No es muy chico el equipo?\"",
     descripcion:
-      "Sin capas de gestión, sin juniors rotando. Tú hablas con un senior y ese senior se mete al sistema. 8+ años en producción en industria regulada.",
+      "Sin capas de gestión, sin juniors rotando. Tú hablas con un senior y ese senior se mete al sistema.",
     icono: "persona",
     acento: "marca",
   },

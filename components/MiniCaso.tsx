@@ -49,10 +49,6 @@ export default function MiniCaso() {
           </ul>
         </div>
 
-        <p className="mt-10 text-sm sm:text-base max-w-2xl leading-relaxed font-semibold text-fg">
-          {minicaso.cierre}
-        </p>
-
         {/* Escalera de valor — qué viene después, sin obligar */}
         <div className="mt-14 max-w-2xl">
           <h3 className="font-semibold text-fg mb-6">
