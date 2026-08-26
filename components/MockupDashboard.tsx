@@ -154,7 +154,7 @@ export default function MockupDashboard() {
                     <span className="inline-block w-2 h-2 rounded-full bg-[#ff4444] mr-2" />
                     <span className="text-[11px] font-medium" style={{ color: "var(--term-error)" }}>Alta</span>
                   </td>
-                  <td className="px-4 py-2.5">Datos de ventas duplicados en 3 fuentes</td>
+                  <td className="px-4 py-2.5">Datos de ventas duplicados entre 3 sistemas que nadie reconcilia</td>
                   <td className="px-4 py-2.5 hidden sm:table-cell" style={{ color: "var(--term-subtle)" }}>Decisiones con error</td>
                 </tr>
                 <tr style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>

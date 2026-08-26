@@ -20,7 +20,7 @@ export const nosotros = {
       "Desarrollo web, agentes de IA y automatización. Construye las herramientas que hacen el trabajo pesado.",
   },
   parrafos: [
-    "Combinamos arquitectura de datos, desarrollo e inteligencia artificial. Eso nos permite resolver el problema completo: desde el dato crudo hasta el producto funcionando en tu operación.",
+    "Arquitectura de datos, desarrollo y automatización con IA. Resolvemos el problema completo: desde el dato desordenado hasta el reporte funcionando solo en tu operación.",
     "Trabajamos directo, sin intermediarios. Quien responde somos nosotros. Nos quedamos hasta que tu equipo opere solo.",
   ],
   /** Se renderizan como badges en línea, en `--font-mono`. */

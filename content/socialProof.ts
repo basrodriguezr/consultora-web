@@ -44,4 +44,4 @@ export const datos: DatoProof[] = [
 ];
 
 export const cierreSocialProof =
-  "Las empresas que resuelven su base de datos hoy van a poder usar IA mañana. Las que no, van a pagar consultoras de emergencia al triple.";
+  "Las empresas que ordenan sus datos hoy van a poder usar IA mañana. Las que no, van a pagar el doble por hacerlo apuradas.";

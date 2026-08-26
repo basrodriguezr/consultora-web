@@ -18,7 +18,7 @@ export const minicaso = {
   etiqueta: "Ejemplo real de diagnóstico",
   titulo: "¿Cuánto le cuesta a una empresa no saber el estado real de sus datos?",
   contexto:
-    "Hicimos un diagnóstico de madurez de datos en una empresa mediana con 4 áreas y más de 100K registros de clientes. Esto es lo que encontramos en la primera semana:",
+    "Hicimos un diagnóstico en una empresa mediana de servicios en Santiago. 4 áreas, 120 personas, datos repartidos entre el ERP, planillas y un par de sistemas sin conectar.",
   metricas: [
     {
       cifra: "4",
