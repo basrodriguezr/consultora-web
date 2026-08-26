@@ -15,7 +15,7 @@ export interface MetricaCaso {
 }
 
 export const minicaso = {
-  etiqueta: "Antes y después de un proceso típico",
+  etiqueta: "Así se ve un diagnóstico",
   titulo: "¿Cuánto le cuesta a una empresa no saber el estado real de sus datos?",
   contexto:
     "Hicimos un diagnóstico en una empresa mediana de servicios en Santiago. 4 áreas, 120 personas, datos repartidos entre el ERP, planillas y un par de sistemas sin conectar.",
@@ -33,8 +33,8 @@ export const minicaso = {
       descripcion: "sistemas con datos duplicados o sin conectar",
     },
     {
-      cifra: "32/100",
-      descripcion: "score de madurez de datos antes del diagnóstico",
+      cifra: "$4,2M",
+      descripcion: "al año en horas del equipo que se pueden recuperar",
     },
   ] as MetricaCaso[],
   entregables: [

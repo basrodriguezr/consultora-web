@@ -1,19 +1,47 @@
 /**
- * Mockup de "antes / después" — muestra el cambio en UN proceso concreto,
- * no un score abstracto de madurez.
+ * Mockup de dashboard — simula el output real de un diagnóstico de ArqData.
  *
- * Decisión (ago-2026): reemplazamos el tablero de "madurez 32/100" por el
- * antes/después de un reporte semanal armado a mano. Motivo: se entiende de
- * un vistazo, conecta con el pitch ("¿alguien armando reportes a mano?
- * yo hago que eso se haga solo") y es honesto — no finge datos de una empresa
- * específica. Referencia visual: linear.app, vercel.com.
+ * Decisión (ago-2026): conservamos el diseño rico (métrica destacada + barra +
+ * KPIs + tabla de hallazgos) porque da peso de "producto real" y genera
+ * confianza en compradores técnicos. Lo que cambió es el CONTENIDO: en vez de
+ * un "score de madurez 32/100" (jerga que nadie entiende), el número
+ * protagonista es el COSTO que el visitante siente — horas que su equipo
+ * pierde hoy armando reportes a mano. Conecta con el pitch:
+ * "¿alguien armando reportes a mano? yo hago que eso se haga solo".
  *
- * Usa la paleta terminal del sitio (--term-*) para combinar con el tema.
- * Mantiene fondo oscuro fijo para parecer un "screenshot de producto".
+ * La cifra en pesos es una estimación etiquetada como tal (no se presenta
+ * como dato real de una empresa específica) para no perder honestidad.
+ *
+ * Usa la paleta terminal del sitio (--term-*). Fondo oscuro fijo para parecer
+ * un "screenshot de producto".
  *
  * Server Component: solo markup.
  */
 export default function MockupDashboard() {
+  const hallazgos = [
+    {
+      prioridad: "Alta",
+      color: "#ff4444",
+      hallazgo: "El reporte semanal lo arma una sola persona a mano",
+      impacto: "8 hrs/sem",
+      impactoColor: "var(--term-subtle)",
+    },
+    {
+      prioridad: "Alta",
+      color: "#ff4444",
+      hallazgo: "Las ventas se registran en 3 sistemas que nadie cruza",
+      impacto: "Cifras que no cuadran",
+      impactoColor: "var(--term-subtle)",
+    },
+    {
+      prioridad: "Media",
+      color: "var(--term-brand-500)",
+      hallazgo: "Nadie sabe qué área gasta más en la nube",
+      impacto: "Gasto sin control",
+      impactoColor: "var(--term-subtle)",
+    },
+  ];
+
   return (
     <div
       className="rounded-xl border shadow-2xl overflow-hidden"
@@ -38,7 +66,7 @@ export default function MockupDashboard() {
             className="font-mono text-xs"
             style={{ color: "var(--term-muted)" }}
           >
-            ArqData · Reporte semanal de ventas
+            ArqData · Radiografía de datos
           </span>
         </div>
         <span
@@ -52,89 +80,123 @@ export default function MockupDashboard() {
             className="w-1.5 h-1.5 rounded-full"
             style={{ background: "var(--term-brand-500)" }}
           />
-          Automatizado
+          Diagnóstico rápido
         </span>
       </div>
 
-      {/* Contenido: antes / después de un proceso concreto */}
+      {/* Contenido del dashboard */}
       <div className="p-5 sm:p-6 space-y-5">
-        {/* Encabezado de las dos columnas */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <div>
-            <p
-              className="text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5"
-              style={{ color: "var(--term-subtle)" }}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: "var(--term-error)" }}
-              />
-              Antes
+        {/* Métrica protagonista: lo que cuesta hoy (tiempo perdido) */}
+        <div>
+          <div className="flex items-end justify-between mb-2">
+            <div>
+              <p
+                className="text-[11px] uppercase tracking-wider mb-1"
+                style={{ color: "var(--term-subtle)" }}
+              >
+                Tiempo perdido en tareas manuales
+              </p>
+              <p className="font-mono text-4xl font-bold" style={{ color: "var(--term-brand-500)" }}>
+                18<span className="text-lg" style={{ color: "var(--term-subtle)" }}> hrs/semana</span>
+              </p>
+            </div>
+            <p className="text-[11px] text-right" style={{ color: "var(--term-subtle)" }}>
+              ≈ $4,2M al año*<br />
+              <span className="text-[10px]">*estimado en horas del equipo</span>
             </p>
           </div>
-          <div>
-            <p
-              className="text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5"
-              style={{ color: "var(--term-subtle)" }}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: "var(--term-brand-500)" }}
-              />
-              Después
-            </p>
+          {/* Barra: cuánto de eso es automatizable */}
+          <div
+            className="h-3 rounded-full overflow-hidden relative"
+            style={{ background: "var(--term-panel)" }}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: "78%",
+                background: "linear-gradient(90deg, var(--term-brand-600), var(--term-brand-500))",
+              }}
+            />
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[10px]" style={{ color: "var(--term-brand-500)" }}>78% se puede automatizar</span>
+            <span className="text-[10px]" style={{ color: "var(--term-subtle)" }}>14 de 18 hrs recuperables</span>
           </div>
         </div>
 
-        {/* Filas de comparación */}
-        {[
-          { antes: "8 horas cada semana", despues: "Se genera solo" },
-          { antes: "Depende de 1 persona", despues: "No depende de nadie" },
-          { antes: "Se cae si ella falta", despues: "Corre aunque no estés" },
-        ].map((fila) => (
-          <div key={fila.antes} className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div
-              className="rounded-lg p-3 font-mono text-[13px]"
-              style={{
-                background: "var(--term-panel)",
-                border: "1px solid rgba(255,68,68,0.12)",
-                color: "var(--term-fg)",
-              }}
-            >
-              <span style={{ color: "var(--term-error)" }} className="mr-1.5">✕</span>
-              {fila.antes}
-            </div>
-            <div
-              className="rounded-lg p-3 font-mono text-[13px]"
-              style={{
-                background: "var(--term-panel)",
-                border: "1px solid rgba(var(--term-luz),0.18)",
-                color: "var(--term-fg)",
-              }}
-            >
-              <span style={{ color: "var(--term-brand-500)" }} className="mr-1.5">✓</span>
-              {fila.despues}
-            </div>
-          </div>
-        ))}
-
-        {/* Remate: costo de oportunidad en tiempo (concreto y verdadero) */}
-        <div
-          className="rounded-lg p-4 flex items-start gap-3"
-          style={{
-            background: "rgba(var(--term-luz),0.06)",
-            border: "1px solid rgba(var(--term-luz),0.15)",
-          }}
-        >
-          <span
-            className="font-mono text-2xl font-bold shrink-0"
-            style={{ color: "var(--term-brand-500)" }}
+        {/* KPI cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <div
+            className="rounded-lg p-3"
+            style={{ background: "var(--term-panel)", border: "1px solid rgba(255,255,255,0.04)" }}
           >
-            6 hrs
-          </span>
-          <p className="text-[13px] leading-snug" style={{ color: "var(--term-muted)" }}>
-            a la semana que tu equipo deja de perder armando planillas a mano.
-          </p>
+            <p className="text-[10px]" style={{ color: "var(--term-subtle)" }}>Procesos manuales</p>
+            <p className="font-mono text-xl font-bold" style={{ color: "var(--term-error)" }}>4</p>
+          </div>
+          <div
+            className="rounded-lg p-3"
+            style={{ background: "var(--term-panel)", border: "1px solid rgba(255,255,255,0.04)" }}
+          >
+            <p className="text-[10px]" style={{ color: "var(--term-subtle)" }}>Depende de 1 persona</p>
+            <p className="font-mono text-xl font-bold" style={{ color: "var(--term-error)" }}>2</p>
+          </div>
+          <div
+            className="rounded-lg p-3"
+            style={{ background: "var(--term-panel)", border: "1px solid rgba(255,255,255,0.04)" }}
+          >
+            <p className="text-[10px]" style={{ color: "var(--term-subtle)" }}>Sistemas sin conectar</p>
+            <p className="font-mono text-xl font-bold" style={{ color: "var(--term-brand-500)" }}>3</p>
+          </div>
+        </div>
+
+        {/* Tabla de hallazgos */}
+        <div className="relative">
+          <div
+            className="rounded-lg overflow-hidden"
+            style={{ background: "var(--term-panel)", border: "1px solid rgba(255,255,255,0.04)" }}
+          >
+            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "8px 16px" }}>
+              <p className="text-[11px] font-medium" style={{ color: "var(--term-muted)" }}>
+                Qué encontramos
+              </p>
+            </div>
+            <table className="w-full text-[12px]">
+              <thead>
+                <tr style={{ color: "var(--term-subtle)" }} className="text-left">
+                  <th className="px-4 py-2 font-medium">Prioridad</th>
+                  <th className="px-4 py-2 font-medium">Hallazgo</th>
+                  <th className="px-4 py-2 font-medium hidden sm:table-cell">Impacto</th>
+                </tr>
+              </thead>
+              <tbody style={{ color: "var(--term-fg)" }}>
+                {hallazgos.map((h) => (
+                  <tr key={h.hallazgo} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                    <td className="px-4 py-2.5 whitespace-nowrap">
+                      <span
+                        className="inline-block w-2 h-2 rounded-full mr-2"
+                        style={{ background: h.color }}
+                      />
+                      <span className="text-[11px] font-medium" style={{ color: h.color }}>
+                        {h.prioridad}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5">{h.hallazgo}</td>
+                    <td
+                      className="px-4 py-2.5 hidden sm:table-cell"
+                      style={{ color: h.impactoColor }}
+                    >
+                      {h.impacto}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Fade-out inferior */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-10 rounded-b-lg pointer-events-none"
+            style={{ background: `linear-gradient(to top, var(--term-base), transparent)` }}
+          />
         </div>
       </div>
     </div>

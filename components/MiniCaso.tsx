@@ -30,7 +30,8 @@ export default function MiniCaso() {
         <div className="mb-12">
           <MockupDashboard />
           <p className="mt-4 text-xs text-muted text-center sm:text-left">
-            Así se ve el antes y después de un proceso típico que automatizamos.
+            Ejemplo del tipo de hallazgos que entregamos. Los números son
+            representativos de una empresa mediana típica.
           </p>
         </div>
 
