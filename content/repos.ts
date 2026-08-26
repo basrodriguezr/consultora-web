@@ -13,7 +13,7 @@ export interface Repo {
 export const repos: Repo[] = [
   {
     nombre: "Risk Analytics Pipeline",
-    descripcion: "Tracking Error, VaR y Beta para fondos de pensiones",
+    descripcion: "Métricas de riesgo (TE, VaR, Beta) — 4h manuales a 15 min",
     stack: "AWS Glue · PySpark · Redshift",
     url: "https://github.com/Danichavez/portfolio-risk-analytics-pipeline",
   },
