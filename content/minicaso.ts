@@ -15,7 +15,7 @@ export interface MetricaCaso {
 }
 
 export const minicaso = {
-  etiqueta: "Ejemplo real de diagnóstico",
+  etiqueta: "Antes y después de un proceso típico",
   titulo: "¿Cuánto le cuesta a una empresa no saber el estado real de sus datos?",
   contexto:
     "Hicimos un diagnóstico en una empresa mediana de servicios en Santiago. 4 áreas, 120 personas, datos repartidos entre el ERP, planillas y un par de sistemas sin conectar.",

@@ -30,7 +30,7 @@ export default function MiniCaso() {
         <div className="mb-12">
           <MockupDashboard />
           <p className="mt-4 text-xs text-muted text-center sm:text-left">
-            Resultado del análisis de ArqData sobre empresa mediana (100K registros de clientes)
+            Así se ve el antes y después de un proceso típico que automatizamos.
           </p>
         </div>
 

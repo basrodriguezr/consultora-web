@@ -1,9 +1,15 @@
 /**
- * Mockup de dashboard — simula el output real del diagnóstico de madurez.
+ * Mockup de "antes / después" — muestra el cambio en UN proceso concreto,
+ * no un score abstracto de madurez.
  *
- * Usa la paleta terminal del sitio (--term-*) en vez de colores hardcodeados
- * para que combine con el tema general. Mantiene fondo oscuro fijo para
- * parecer un "screenshot de producto".
+ * Decisión (ago-2026): reemplazamos el tablero de "madurez 32/100" por el
+ * antes/después de un reporte semanal armado a mano. Motivo: se entiende de
+ * un vistazo, conecta con el pitch ("¿alguien armando reportes a mano?
+ * yo hago que eso se haga solo") y es honesto — no finge datos de una empresa
+ * específica. Referencia visual: linear.app, vercel.com.
+ *
+ * Usa la paleta terminal del sitio (--term-*) para combinar con el tema.
+ * Mantiene fondo oscuro fijo para parecer un "screenshot de producto".
  *
  * Server Component: solo markup.
  */
@@ -32,7 +38,7 @@ export default function MockupDashboard() {
             className="font-mono text-xs"
             style={{ color: "var(--term-muted)" }}
           >
-            ArqData · Diagnóstico de Madurez
+            ArqData · Reporte semanal de ventas
           </span>
         </div>
         <span
@@ -46,133 +52,89 @@ export default function MockupDashboard() {
             className="w-1.5 h-1.5 rounded-full"
             style={{ background: "var(--term-brand-500)" }}
           />
-          Oportunidad de mejora
+          Automatizado
         </span>
       </div>
 
-      {/* Contenido del dashboard */}
+      {/* Contenido: antes / después de un proceso concreto */}
       <div className="p-5 sm:p-6 space-y-5">
-        {/* Score + barra de progreso */}
-        <div>
-          <div className="flex items-end justify-between mb-2">
-            <div>
-              <p
-                className="text-[11px] uppercase tracking-wider mb-1"
-                style={{ color: "var(--term-subtle)" }}
-              >
-                Madurez de Datos
-              </p>
-              <p className="font-mono text-4xl font-bold" style={{ color: "var(--term-brand-500)" }}>
-                32<span className="text-lg" style={{ color: "var(--term-subtle)" }}>/100</span>
-              </p>
-            </div>
-            <p className="text-[11px]" style={{ color: "var(--term-subtle)" }}>
-              Promedio industria: 55
+        {/* Encabezado de las dos columnas */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <p
+              className="text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5"
+              style={{ color: "var(--term-subtle)" }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: "var(--term-error)" }}
+              />
+              Antes
             </p>
           </div>
-          {/* Barra de progreso */}
-          <div
-            className="h-3 rounded-full overflow-hidden relative"
-            style={{ background: "var(--term-panel)" }}
-          >
+          <div>
+            <p
+              className="text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5"
+              style={{ color: "var(--term-subtle)" }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: "var(--term-brand-500)" }}
+              />
+              Después
+            </p>
+          </div>
+        </div>
+
+        {/* Filas de comparación */}
+        {[
+          { antes: "8 horas cada semana", despues: "Se genera solo" },
+          { antes: "Depende de 1 persona", despues: "No depende de nadie" },
+          { antes: "Se cae si ella falta", despues: "Corre aunque no estés" },
+        ].map((fila) => (
+          <div key={fila.antes} className="grid grid-cols-2 gap-3 sm:gap-4">
             <div
-              className="h-full rounded-full"
+              className="rounded-lg p-3 font-mono text-[13px]"
               style={{
-                width: "32%",
-                background: "linear-gradient(90deg, var(--term-brand-600), var(--term-brand-500))",
+                background: "var(--term-panel)",
+                border: "1px solid rgba(255,68,68,0.12)",
+                color: "var(--term-fg)",
               }}
-            />
-            <div
-              className="absolute top-0 h-full w-px"
-              style={{ left: "55%", background: "var(--term-subtle)" }}
-            />
-          </div>
-          <div className="flex justify-between mt-1">
-            <span className="text-[10px]" style={{ color: "var(--term-line-strong)" }}>0</span>
-            <span className="text-[10px]" style={{ color: "var(--term-subtle)" }}>55 — promedio</span>
-            <span className="text-[10px]" style={{ color: "var(--term-line-strong)" }}>100</span>
-          </div>
-        </div>
-
-        {/* KPI cards */}
-        <div className="grid grid-cols-3 gap-3">
-          <div
-            className="rounded-lg p-3"
-            style={{ background: "var(--term-panel)", border: "1px solid rgba(255,255,255,0.04)" }}
-          >
-            <p className="text-[10px]" style={{ color: "var(--term-subtle)" }}>Procesos manuales</p>
-            <p className="font-mono text-xl font-bold" style={{ color: "var(--term-error)" }}>4</p>
-          </div>
-          <div
-            className="rounded-lg p-3"
-            style={{ background: "var(--term-panel)", border: "1px solid rgba(255,255,255,0.04)" }}
-          >
-            <p className="text-[10px]" style={{ color: "var(--term-subtle)" }}>Hrs automatizables</p>
-            <p className="font-mono text-xl font-bold" style={{ color: "var(--term-brand-500)" }}>
-              18<span className="text-xs" style={{ color: "var(--term-subtle)" }}>/sem</span>
-            </p>
-          </div>
-          <div
-            className="rounded-lg p-3"
-            style={{ background: "var(--term-panel)", border: "1px solid rgba(255,255,255,0.04)" }}
-          >
-            <p className="text-[10px]" style={{ color: "var(--term-subtle)" }}>Sin conectar</p>
-            <p className="font-mono text-xl font-bold" style={{ color: "var(--term-brand-500)" }}>3</p>
-          </div>
-        </div>
-
-        {/* Tabla de hallazgos */}
-        <div className="relative">
-          <div
-            className="rounded-lg overflow-hidden"
-            style={{ background: "var(--term-panel)", border: "1px solid rgba(255,255,255,0.04)" }}
-          >
-            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "8px 16px" }}>
-              <p className="text-[11px] font-medium" style={{ color: "var(--term-muted)" }}>
-                Hallazgos principales
-              </p>
+            >
+              <span style={{ color: "var(--term-error)" }} className="mr-1.5">✕</span>
+              {fila.antes}
             </div>
-            <table className="w-full text-[12px]">
-              <thead>
-                <tr style={{ color: "var(--term-subtle)" }} className="text-left">
-                  <th className="px-4 py-2 font-medium">Prioridad</th>
-                  <th className="px-4 py-2 font-medium">Hallazgo</th>
-                  <th className="px-4 py-2 font-medium hidden sm:table-cell">Impacto</th>
-                </tr>
-              </thead>
-              <tbody style={{ color: "var(--term-fg)" }}>
-                <tr style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                  <td className="px-4 py-2.5">
-                    <span className="inline-block w-2 h-2 rounded-full bg-[#ff4444] mr-2" />
-                    <span className="text-[11px] font-medium" style={{ color: "var(--term-error)" }}>Alta</span>
-                  </td>
-                  <td className="px-4 py-2.5">Reporte semanal depende de 1 persona</td>
-                  <td className="px-4 py-2.5 hidden sm:table-cell" style={{ color: "var(--term-subtle)" }}>8 hrs/sem</td>
-                </tr>
-                <tr style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                  <td className="px-4 py-2.5">
-                    <span className="inline-block w-2 h-2 rounded-full bg-[#ff4444] mr-2" />
-                    <span className="text-[11px] font-medium" style={{ color: "var(--term-error)" }}>Alta</span>
-                  </td>
-                  <td className="px-4 py-2.5">Datos de ventas duplicados entre 3 sistemas que nadie reconcilia</td>
-                  <td className="px-4 py-2.5 hidden sm:table-cell" style={{ color: "var(--term-subtle)" }}>Decisiones con error</td>
-                </tr>
-                <tr style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                  <td className="px-4 py-2.5">
-                    <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ background: "var(--term-brand-500)" }} />
-                    <span className="text-[11px] font-medium" style={{ color: "var(--term-brand-500)" }}>Media</span>
-                  </td>
-                  <td className="px-4 py-2.5">Costos cloud sin atribución por área</td>
-                  <td className="px-4 py-2.5 hidden sm:table-cell" style={{ color: "var(--term-subtle)" }}>Sin visibilidad</td>
-                </tr>
-              </tbody>
-            </table>
+            <div
+              className="rounded-lg p-3 font-mono text-[13px]"
+              style={{
+                background: "var(--term-panel)",
+                border: "1px solid rgba(var(--term-luz),0.18)",
+                color: "var(--term-fg)",
+              }}
+            >
+              <span style={{ color: "var(--term-brand-500)" }} className="mr-1.5">✓</span>
+              {fila.despues}
+            </div>
           </div>
-          {/* Fade-out inferior */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-10 rounded-b-lg pointer-events-none"
-            style={{ background: `linear-gradient(to top, var(--term-base), transparent)` }}
-          />
+        ))}
+
+        {/* Remate: costo de oportunidad en tiempo (concreto y verdadero) */}
+        <div
+          className="rounded-lg p-4 flex items-start gap-3"
+          style={{
+            background: "rgba(var(--term-luz),0.06)",
+            border: "1px solid rgba(var(--term-luz),0.15)",
+          }}
+        >
+          <span
+            className="font-mono text-2xl font-bold shrink-0"
+            style={{ color: "var(--term-brand-500)" }}
+          >
+            6 hrs
+          </span>
+          <p className="text-[13px] leading-snug" style={{ color: "var(--term-muted)" }}>
+            a la semana que tu equipo deja de perder armando planillas a mano.
+          </p>
         </div>
       </div>
     </div>
