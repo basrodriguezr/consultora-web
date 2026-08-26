@@ -87,7 +87,7 @@ export default function Hero() {
 
           {/* Strip de industrias — auto-segmentación del visitante */}
           <p className="mt-4 font-mono text-xs text-subtle">
-            Empresas medianas en: Retail · Inmobiliaria · Servicios · Logística · Manufactura
+            Retail · Inmobiliaria · Servicios · Logística · Manufactura
           </p>
         </div>
       </div>

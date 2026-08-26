@@ -19,8 +19,7 @@ export const hero = {
    * `text-subtle`: es prueba, no titular.
    */
   proof: [
-    "8+ años en producción · Sector financiero regulado",
-    "Empresas medianas en Chile",
+    "8+ años en producción · Datos críticos de negocio",
     "Resultados en semanas, no meses",
   ],
 } as const;

@@ -11,7 +11,7 @@ export const nosotros = {
     nombre: "Daniela Chávez",
     rol: "Data Architect · Fundadora",
     experiencia:
-      "8+ años diseñando plataformas de datos en producción. Industria financiera regulada (pensiones) en Chile. La persona que habla contigo es la que ejecuta.",
+      "8+ años diseñando plataformas de datos en producción. Experiencia en industria regulada, hoy enfocada en empresas medianas. La persona que habla contigo es la que ejecuta.",
   },
   socio: {
     nombre: "Bastián Rodríguez",
