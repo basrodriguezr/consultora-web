@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { servicios } from "@/content/servicios";
+import { rangoLegible } from "@/lib/assessment/catalogo-interno";
 import type { SalidaAssessment } from "@/lib/assessment/esquema";
 import { renderPreDiagnostico } from "@/lib/assessment/render";
 import type { LeadAssessmentNormalizado } from "@/lib/leads";
@@ -147,6 +149,38 @@ describe("renderPreDiagnostico — las reglas de contenido", () => {
     expect(doc).toContain("$8–18M CLP");
     expect(doc).toContain("4-6 semanas");
   });
+
+  /**
+   * Hueco real y verificado: los snapshots congelan `"quick-win"` y el test de
+   * arriba usa `"finops"`. **Ningún caso tocaba el slug `assessment`** — el
+   * servicio principal del producto—, así que renombrarlo no habría movido una
+   * sola línea de golden.
+   *
+   * `nombreServicio()` y `plazoServicio()` no lanzan cuando el slug no está en
+   * `content/servicios.ts`: caen al slug crudo y a la cadena vacía. Eso es
+   * correcto (el documento no revienta) y es también la forma que tiene el
+   * defecto de pasar desapercibido: la línea sale como `**assessment** — $3–6M
+   * CLP, ` y se lee como un error de armado en la sección 5.
+   *
+   * Es la misma medicina que se le aplicó al enum de horas después del bug de
+   * `"no-se h/semana"`: **el golden congela la forma del documento, no el
+   * dominio de los valores.** Se recorre el catálogo entero, así que agregar un
+   * servicio lo cubre solo.
+   */
+  it.each(servicios.map((s) => [s.slug, s.nombre, s.plazo] as const))(
+    "renderiza el siguiente paso completo para el slug %s",
+    (slug, nombre, plazo) => {
+      const doc = renderPreDiagnostico(
+        lead(),
+        salida({ servicioRecomendado: slug }),
+        "a-evaluar",
+      );
+
+      expect(doc).toContain(`**${nombre}** — ${rangoLegible(slug)}, ${plazo}`);
+      expect(nombre.trim()).not.toBe("");
+      expect(plazo.trim()).not.toBe("");
+    },
+  );
 
   /**
    * Sin horas declaradas no hay cifra: sale la marca de pendiente y **nunca un

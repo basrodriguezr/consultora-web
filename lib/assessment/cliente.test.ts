@@ -57,6 +57,9 @@ const { APIConnectionTimeoutError, AnthropicError, InternalServerError } =
 const { generarPreDiagnostico, MODELO_POR_DEFECTO, TIMEOUT_POR_DEFECTO_MS } =
   await import("@/lib/assessment/cliente");
 
+const { MAX_DURATION_SEGUNDOS, PRESUPUESTO_MODELO_MS, RESERVA_MS } =
+  await import("@/lib/assessment/presupuesto");
+
 const VARIABLES = [
   "ANTHROPIC_API_KEY",
   "ASSESSMENT_BASE_URL",
@@ -211,6 +214,23 @@ describe("generarPreDiagnostico — camino feliz", () => {
 });
 
 describe("generarPreDiagnostico — el único reintento", () => {
+  /**
+   * ⏱️ **El reintento está condicionado al presupuesto de tiempo, así que estos
+   * tests tienen que declarar uno donde quepa.**
+   *
+   * Con los valores de producción no cabe **nunca**: el intento consume el
+   * presupuesto entero (52 s de techo contra ~35 s medidos en la calibración), y
+   * un segundo intento completo moriría cortado por la plataforma. Setear
+   * `ASSESSMENT_TIMEOUT_MS` es lo que hace un desarrollador contra el modelo
+   * local — está fuera del reloj de Vercel — y con eso el techo pasa a ser dos
+   * intentos de ese tamaño (ver `presupuestoDeTiempo` en `cliente.ts`).
+   *
+   * El caso de producción tiene su propio test más abajo.
+   */
+  beforeEach(() => {
+    process.env.ASSESSMENT_TIMEOUT_MS = "1000";
+  });
+
   it("inválida y después válida: dos llamadas y ok", async () => {
     parseMock
       .mockResolvedValueOnce(respuestaOk({ resumen: "corto" }))
@@ -244,6 +264,75 @@ describe("generarPreDiagnostico — el único reintento", () => {
 
     expect(r.ok).toBe(true);
     expect(parseMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("generarPreDiagnostico — el reintento consciente del presupuesto", () => {
+  /**
+   * El defecto que esto cierra: el reintento del §15b **no podía correr en
+   * producción y nadie lo notaba**. Un fallo `reintentable` (parseo/validación)
+   * ocurre *después* de que el modelo respondió —35,7 s y 29,1 s medidos en la
+   * calibración—, así que un segundo intento completo pedía otros ~35 s y la
+   * plataforma mataba la función a mitad de camino: sin documento y sin el log
+   * limpio del timeout.
+   *
+   * Ahora la llamada no se gasta. **Y el fallo sigue saliendo con el motivo que
+   * corresponde** (`esquema-invalido`, que es lo que efectivamente pasó), con el
+   * detalle diciendo por qué no hubo segundo intento.
+   */
+  it("un intento que consumió el reloj no gasta el reintento: una sola llamada", async () => {
+    // Los 35,7 s medidos en la calibración. `Date.now()` se llama exactamente
+    // dos veces por invocación (el inicio y el corte antes del reintento), así
+    // que la secuencia describe un primer intento que tardó lo que tarda de
+    // verdad, sin que el test espere un solo milisegundo.
+    const reloj = vi.spyOn(Date, "now").mockReturnValueOnce(0).mockReturnValueOnce(35_700);
+    parseMock.mockResolvedValue(respuestaOk({ resumen: "corto" }));
+
+    const r = await generarPreDiagnostico(lead());
+
+    expect(r.ok === false && r.motivo).toBe("esquema-invalido");
+    expect(parseMock).toHaveBeenCalledTimes(1);
+    expect(r.ok === false && r.detalle).toContain("no entra en el presupuesto");
+
+    reloj.mockRestore();
+  });
+
+  /**
+   * 🛑 **Y con los valores de producción tampoco entra un fallo rápido.** El
+   * intento por defecto vale el presupuesto entero (52 s de 52 s), así que
+   * cualquier tiempo transcurrido mayor que cero deja el reintento afuera: en
+   * producción el camino existe pero **no se recorre nunca**.
+   *
+   * Este test afirma esa consecuencia en vez de dejarla implícita en la
+   * aritmética. Es información para `/arquitecto`, no una preferencia: si algún
+   * día se quiere un reintento real en producción, hay que **bajar el timeout
+   * por intento** (o subir `MAX_DURATION_SEGUNDOS`), y ese día este test cambia
+   * y se ve en el diff. Lo que no puede volver a pasar es lo de antes: un
+   * reintento que se lee como red, se paga en tokens y muere cortado.
+   */
+  it("con los valores de producción ni siquiera un fallo rápido deja lugar al reintento", async () => {
+    const reloj = vi.spyOn(Date, "now").mockReturnValueOnce(0).mockReturnValueOnce(900);
+    parseMock.mockResolvedValue(respuestaOk({ resumen: "corto" }));
+
+    const r = await generarPreDiagnostico(lead());
+
+    expect(parseMock).toHaveBeenCalledTimes(1);
+    expect(r.ok === false && r.detalle).toContain("no entra en el presupuesto");
+
+    reloj.mockRestore();
+  });
+
+  /**
+   * Un camino de recuperación que no cabe en el presupuesto se lee como una red
+   * y no lo es. Este test es el que impide que vuelva a serlo en silencio: si
+   * alguien sube `MAX_DURATION_SEGUNDOS` o baja el timeout por intento, el
+   * reintento se vuelve alcanzable y **es una decisión que se ve en el diff**.
+   */
+  it("el timeout por intento es estrictamente menor que maxDuration", () => {
+    expect(TIMEOUT_POR_DEFECTO_MS).toBe(PRESUPUESTO_MODELO_MS);
+    expect(TIMEOUT_POR_DEFECTO_MS).toBeLessThan(MAX_DURATION_SEGUNDOS * 1_000);
+    // Y el margen que queda es exactamente la reserva del render + EMAIL #2.
+    expect(MAX_DURATION_SEGUNDOS * 1_000 - TIMEOUT_POR_DEFECTO_MS).toBe(RESERVA_MS);
   });
 });
 

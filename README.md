@@ -34,7 +34,7 @@ El sitio **levanta sin configurar nada**: sin `RESEND_API_KEY` el formulario mue
 | `npm run build` | Build de producción — correrlo antes de dar por cerrada una tarea |
 | `npm start` | Sirve el build de producción localmente (requiere `npm run build` antes) |
 | `npm run lint` | ESLint (config de `eslint-config-next`) |
-| `npm test` | Suite de tests con Vitest (74 tests, < 1 segundo) |
+| `npm test` | Suite de tests con Vitest (242 tests, < 1 segundo) |
 | `npm run test:watch` | Los mismos tests, reejecutándose al guardar |
 
 ## Variables de entorno
@@ -266,9 +266,9 @@ Detalles que importan:
 npm test
 ```
 
-74 tests con **Vitest**, corren en menos de un segundo y no necesitan navegador ni red.
+242 tests con **Vitest**, corren en menos de un segundo y no necesitan navegador ni red.
 
-**Qué se testea y por qué ese recorte.** No se testea el sitio: las 8 secciones solo hacen `.map()` sobre `content/`, y verificar eso sería comprobar que React recorre un array. Lo que sí tiene tests es la lógica donde algo puede romperse **en silencio** — y el criterio para elegirla fue mirar los bugs que este proyecto ya tuvo de verdad:
+**Qué se testea y por qué ese recorte.** No se testea el sitio: las secciones de la home solo hacen `.map()` sobre `content/`, y verificar eso sería comprobar que React recorre un array. Lo que sí tiene tests es la lógica donde algo puede romperse **en silencio** — y el criterio para elegirla fue mirar los bugs que este proyecto ya tuvo de verdad:
 
 | Archivo | Qué protege |
 |---------|-------------|

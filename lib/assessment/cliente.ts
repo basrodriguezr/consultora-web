@@ -18,6 +18,11 @@ import {
   type SalidaAssessment,
 } from "@/lib/assessment/esquema";
 import {
+  cabeOtroIntento,
+  MAX_DURATION_SEGUNDOS,
+  PRESUPUESTO_MODELO_MS,
+} from "@/lib/assessment/presupuesto";
+import {
   construirMensajeUsuario,
   construirSystem,
 } from "@/lib/assessment/prompt";
@@ -128,15 +133,26 @@ export type MotivoFallo =
   | "error-interno";
 
 /**
- * Presupuesto de tiempo por intento, en MILISEGUNDOS.
+ * Presupuesto de tiempo por intento, en MILISEGUNDOS. **Derivado, no elegido.**
+ *
+ * Sale de `lib/assessment/presupuesto.ts` —el mismo módulo del que el route del
+ * paso 7 saca su `maxDuration`— porque son dos números que **no pueden divergir
+ * en silencio**: el timeout del cliente tiene que ser estrictamente menor que el
+ * techo de la función, o la plataforma mata el proceso antes de que dispare
+ * nuestro timeout y se pierde el camino de error limpio (`motivo: "timeout"`, el
+ * log con el detalle, el EMAIL #1 ya enviado).
+ *
+ * 📏 El valor anterior era `22_000`, escrito antes de que existiera ninguna
+ * medición. **La calibración del paso 6b midió 35,7 s y 29,1 s contra Claude
+ * real: con 22 s las dos llamadas habrían dado timeout.**
  *
  * 🛑 **`ASSESSMENT_TIMEOUT_MS` existe para el desarrollo y NO se setea en
  * producción.** A ~34 tok/s el Qwen local tarda cerca de un minuto en los ~2K
- * tokens de salida del §5, así que el default de 22 s corta siempre. La env var
- * es la forma correcta de resolverlo; un número editado a mano en este archivo
- * es la forma que alguien termina commiteando.
+ * tokens de salida del §5, así que ahí hay que subirlo. La env var es la forma
+ * correcta de resolverlo; un número editado a mano en este archivo es la forma
+ * que alguien termina commiteando.
  */
-export const TIMEOUT_POR_DEFECTO_MS = 22_000;
+export const TIMEOUT_POR_DEFECTO_MS = PRESUPUESTO_MODELO_MS;
 
 /** El modelo de producción. El local se elige con `ASSESSMENT_BASE_URL`, no cambiando esto. */
 export const MODELO_POR_DEFECTO = "claude-opus-5";
@@ -187,17 +203,31 @@ function formatoSalida(): ReturnType<typeof crearFormato> {
 }
 
 /**
- * Presupuesto por intento. `ASSESSMENT_TIMEOUT_MS` se lee en cada llamada (no al
- * importar) para que el valor siga a la configuración y no al orden de imports.
- * Un valor no numérico o ≤ 0 cae al default en vez de propagar un `NaN` al SDK.
+ * El presupuesto de esta llamada: cuánto dura un intento y cuál es el techo del
+ * reloj de pared del que salen los dos.
+ *
+ * `ASSESSMENT_TIMEOUT_MS` se lee en cada llamada (no al importar) para que el
+ * valor siga a la configuración y no al orden de imports. Un valor no numérico o
+ * ≤ 0 cae al default en vez de propagar un `NaN` al SDK.
+ *
+ * **El override mueve el techo con él, a propósito.** En producción los dos
+ * valores son el presupuesto derivado (`maxDuration` menos la reserva del render
+ * y del EMAIL #2). Quien setea `ASSESSMENT_TIMEOUT_MS` está corriendo contra el
+ * modelo local en `next dev`, o sea **fuera del reloj de la plataforma**: dejarle
+ * el techo de producción apagaría en silencio el camino de reintento justo en el
+ * entorno que el §15b quiere que lo ejercite (el modelo local produce JSON
+ * inválido solo, sin que haya que simularlo).
  */
-function timeoutMs(): number {
-  const crudo = envCon(
-    process.env.ASSESSMENT_TIMEOUT_MS,
-    String(TIMEOUT_POR_DEFECTO_MS),
-  );
-  const ms = Number(crudo);
-  return Number.isFinite(ms) && ms > 0 ? Math.floor(ms) : TIMEOUT_POR_DEFECTO_MS;
+function presupuestoDeTiempo(): { porIntento: number; techo: number } {
+  const crudo = env(process.env.ASSESSMENT_TIMEOUT_MS);
+  const ms = crudo === undefined ? NaN : Number(crudo);
+
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return { porIntento: TIMEOUT_POR_DEFECTO_MS, techo: PRESUPUESTO_MODELO_MS };
+  }
+
+  const porIntento = Math.floor(ms);
+  return { porIntento, techo: porIntento * 2 };
 }
 
 /**
@@ -254,8 +284,9 @@ function describir(error: unknown): string {
  * (`APIConnectionTimeoutError` < `APIConnectionError` < `APIError` <
  * `AnthropicError`) y por eso va de lo más específico a lo más general:
  *
- * - timeout / abort → `timeout`. **No se reintenta**: el `maxDuration = 60` del
- *   route no da para dos esperas completas más el render y el EMAIL #2.
+ * - timeout / abort → `timeout`. **No se reintenta**: el presupuesto derivado de
+ *   `presupuesto.ts` (el `maxDuration` de la función menos la reserva del render
+ *   y del EMAIL #2) no da para dos esperas completas.
  * - `APIError` (400, 401, 429, 5xx) → **no se reintenta** tampoco. Un 529
  *   transitorio pierde el pre-diagnóstico y eso está aceptado en el §15b: el
  *   EMAIL #1 ya salió (§11), se pierde el documento, nunca el lead.
@@ -340,10 +371,20 @@ function jsonDelTexto(content: ContentBlock[]): unknown {
  * timeout, no ante 529, no ante refusal. La contrapartida es explícita: un 529
  * transitorio pierde el pre-diagnóstico. Es aceptable porque el EMAIL #1 ya salió
  * (§11): se pierde el documento, nunca el lead.
+ *
+ * ⏱️ **Y ese reintento está condicionado al presupuesto de tiempo** (ver
+ * `cabeOtroIntento`): un fallo `reintentable` ocurre *después* de que el modelo
+ * respondió —o sea a los ~35 s medidos en la calibración—, así que un segundo
+ * intento completo pediría ~70 s y la plataforma cortaría la función a mitad de
+ * camino. Con los números de producción no cabe nunca, y esa es exactamente la
+ * razón por la que la condición está escrita: un camino de recuperación que no
+ * entra en el presupuesto se lee como una red y no lo es.
  */
 export async function generarPreDiagnostico(
   lead: LeadAssessmentNormalizado,
 ): Promise<ResultadoGeneracion> {
+  const inicio = Date.now();
+
   try {
     const apiKey = env(process.env.ANTHROPIC_API_KEY);
     if (!apiKey) {
@@ -353,6 +394,8 @@ export async function generarPreDiagnostico(
         detalle: "ANTHROPIC_API_KEY ausente o vacía",
       };
     }
+
+    const presupuesto = presupuestoDeTiempo();
 
     /**
      * El cliente se construye acá y no en el tope del módulo por dos razones que
@@ -364,7 +407,7 @@ export async function generarPreDiagnostico(
     const cliente = new Anthropic({
       apiKey,
       baseURL: env(process.env.ASSESSMENT_BASE_URL),
-      timeout: timeoutMs(),
+      timeout: presupuesto.porIntento,
       maxRetries: 0,
     });
 
@@ -376,8 +419,31 @@ export async function generarPreDiagnostico(
       return { ok: false, motivo: primero.motivo, detalle: primero.detalle };
     }
 
-    // Único reintento, y solo por salida que no valida. Mismo cuerpo: lo que
-    // cambia es el muestreo del modelo, no el pedido.
+    /**
+     * Único reintento, y solo por salida que no valida. Mismo cuerpo: lo que
+     * cambia es el muestreo del modelo, no el pedido.
+     *
+     * ⏱️ **Pero primero se pregunta si entra en el presupuesto.** El fallo
+     * `reintentable` llega *después* de que el modelo respondió (~35 s medidos),
+     * y otro intento completo pide lo mismo de nuevo: dentro del `maxDuration`
+     * de la función eso no entra, así que la plataforma la mataría a mitad de
+     * camino — sin documento y **sin siquiera el log limpio del timeout**.
+     * Gastar esa llamada es pagar tokens por una respuesta que nadie va a leer.
+     */
+    const transcurrido = Date.now() - inicio;
+    if (!cabeOtroIntento(transcurrido, presupuesto.porIntento, presupuesto.techo)) {
+      return {
+        ok: false,
+        motivo: "esquema-invalido",
+        detalle: recortar(
+          `1 intento inválido y el reintento no entra en el presupuesto ` +
+            `(${transcurrido} ms transcurridos + ${presupuesto.porIntento} ms del intento > ` +
+            `${presupuesto.techo} ms de techo, maxDuration=${MAX_DURATION_SEGUNDOS}s). ` +
+            `#1 ${primero.detalle}`,
+        ),
+      };
+    }
+
     const segundo = await intentar(cliente, modelo, lead);
     if (segundo.clase === "ok") return { ok: true, salida: segundo.salida };
     if (segundo.clase === "final") {
