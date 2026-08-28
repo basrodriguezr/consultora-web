@@ -48,7 +48,7 @@ export interface Servicio {
 export const servicios = [
   {
     slug: "assessment",
-    nombre: "Assessment de Datos",
+    nombre: "Diagnóstico de datos",
     descripcion: "Diagnóstico de madurez + quick-wins + roadmap priorizado.",
     plazo: "2 semanas",
     inversion: "acotada",
