@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { enviarEmailLead, plantillaLead } from "@/lib/email";
+import {
+  asuntoPreDiagnostico,
+  enviarEmailLead,
+  enviarPreDiagnostico,
+  plantillaLead,
+} from "@/lib/email";
 import type {
   LeadAssessmentNormalizado,
   LeadContactoNormalizado,
@@ -254,5 +259,64 @@ describe("plantillaLead — lead de assessment", () => {
    */
   it("marca los opcionales no respondidos", () => {
     expect(plantillaLead(assessment()).texto).toContain("[no respondido]");
+  });
+});
+
+/**
+ * EMAIL #2: el pre-diagnóstico ya renderizado (§11). Va en texto plano y sin
+ * versión HTML a propósito —Daniela copia el Markdown dentro del template v2—,
+ * así que acá no hay nada que escapar; lo que sí hay que cuidar es el asunto.
+ */
+describe("enviarPreDiagnostico", () => {
+  function assessment(
+    cambios: Partial<LeadAssessmentNormalizado> = {},
+  ): LeadAssessmentNormalizado {
+    return {
+      tipo: "assessment",
+      nombre: "Ana Pérez",
+      email: "ana@acme.cl",
+      empresa: "Acme SpA",
+      problemaPrincipal: "Los reportes se arman a mano.",
+      solucionActual: "Planillas Excel.",
+      fuentesDatos: ["erp"],
+      equipoDatos: "parcial",
+      personasConDatos: 4,
+      cloud: "aws",
+      presupuesto: "asignado",
+      urgencia: "alta",
+      recibidoEn: "2026-08-09T12:00:00.000Z",
+      ...cambios,
+    };
+  }
+
+  it("identifica al lead y se distingue del EMAIL #1 en la bandeja", () => {
+    const asunto = asuntoPreDiagnostico(assessment());
+    expect(asunto).toBe("Pre-diagnóstico: Ana Pérez (Acme SpA)");
+    // El asunto del EMAIL #1 del mismo lead empieza con "Assessment: ".
+    expect(asunto).not.toBe(plantillaLead(assessment()).asunto);
+  });
+
+  /** Misma barrera contra inyección de headers SMTP que el asunto del #1. */
+  it("aplasta el asunto en una sola línea", () => {
+    const asunto = asuntoPreDiagnostico(
+      assessment({ nombre: "Ana\r\nBcc: victima@ejemplo.cl\x00" }),
+    );
+    expect(asunto).not.toMatch(/[\r\n\x00]/);
+  });
+
+  describe("sin configurar", () => {
+    const original = process.env.RESEND_API_KEY;
+    afterEach(() => {
+      if (original === undefined) delete process.env.RESEND_API_KEY;
+      else process.env.RESEND_API_KEY = original;
+    });
+
+    it("devuelve 'sin-configurar' sin tocar la red", async () => {
+      delete process.env.RESEND_API_KEY;
+
+      const resultado = await enviarPreDiagnostico(assessment(), "# Documento");
+      expect(resultado.ok).toBe(false);
+      if (!resultado.ok) expect(resultado.motivo).toBe("sin-configurar");
+    });
   });
 });

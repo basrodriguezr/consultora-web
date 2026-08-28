@@ -258,14 +258,29 @@ function cuerpoHtml(titulo: string, lead: Lead, filas: Fila[]): string {
   ].join("");
 }
 
+/** Un mensaje listo para el transporte, ya sin nada que decidir. */
+interface Mensaje {
+  to: string;
+  replyTo: string;
+  asunto: string;
+  texto: string;
+  /** Opcional: el pre-diagnóstico viaja **solo** en texto plano (ver abajo). */
+  html?: string;
+}
+
 /**
- * Envía la notificación del lead. Nunca lanza: todo error se devuelve como
- * `{ ok: false }` para que el route decida qué contarle al usuario.
+ * El único punto de este módulo que habla con Resend.
+ *
+ * Existe desde que hay dos emails (§11: #1 con las respuestas crudas, #2 con el
+ * pre-diagnóstico). Duplicar acá la lectura de la key, la construcción del
+ * cliente y los dos `catch` serían dos lugares donde el manejo de errores puede
+ * derivar — y el de un envío que nadie está esperando (el #2 corre dentro de
+ * `after()`) es justamente el que nadie mira hasta que falla.
+ *
+ * Nunca lanza: todo error vuelve como `{ ok: false }` y quien llama decide si
+ * eso se traduce a HTTP o a una línea de log.
  */
-export async function enviarEmailLead(
-  lead: Lead,
-  calificacion?: Calificacion,
-): Promise<ResultadoEnvio> {
+async function enviar(mensaje: Mensaje): Promise<ResultadoEnvio> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     return {
@@ -275,22 +290,22 @@ export async function enviarEmailLead(
     };
   }
 
-  // `envCon` trata la variable vacía como ausente: definir `CONTACTO_TO=""` en
-  // el panel de Vercel produciría un envío inválido y un 502 sin causa visible.
+  // `envCon` trata la variable vacía como ausente: definir `CONTACTO_FROM=""`
+  // en el panel de Vercel produciría un envío inválido y un 502 sin causa
+  // visible.
   const from = envCon(process.env.CONTACTO_FROM, REMITENTE_POR_DEFECTO);
-  const to = envCon(process.env.CONTACTO_TO, site.email);
-
-  const plantilla = plantillaLead(lead, calificacion);
 
   try {
     const resend = new Resend(apiKey);
     const { data, error } = await resend.emails.send({
       from,
-      to,
-      replyTo: lead.email,
-      subject: plantilla.asunto,
-      text: plantilla.texto,
-      html: plantilla.html,
+      to: mensaje.to,
+      replyTo: mensaje.replyTo,
+      subject: mensaje.asunto,
+      text: mensaje.texto,
+      // `html` se omite del payload cuando no hay: mandar `html: undefined`
+      // deja que el SDK lo serialice como clave presente y vacía.
+      ...(mensaje.html === undefined ? {} : { html: mensaje.html }),
     });
 
     if (error) {
@@ -309,4 +324,81 @@ export async function enviarEmailLead(
       detalle: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+/** Casilla que recibe los leads. Vacía o ausente cae al email público. */
+function destinoLead(): string {
+  return envCon(process.env.CONTACTO_TO, site.email);
+}
+
+/**
+ * Envía la notificación del lead (**EMAIL #1**). Nunca lanza: todo error se
+ * devuelve como `{ ok: false }` para que el route decida qué contarle al
+ * usuario.
+ */
+export async function enviarEmailLead(
+  lead: Lead,
+  calificacion?: Calificacion,
+): Promise<ResultadoEnvio> {
+  const plantilla = plantillaLead(lead, calificacion);
+
+  return enviar({
+    to: destinoLead(),
+    replyTo: lead.email,
+    asunto: plantilla.asunto,
+    texto: plantilla.texto,
+    html: plantilla.html,
+  });
+}
+
+/**
+ * Asunto del EMAIL #2. Exportado para poder testearlo sin tocar la red.
+ *
+ * `unaSolaLinea` es la segunda barrera contra inyección de headers SMTP:
+ * `nombre` y `empresa` vienen del formulario y un `\r\n` en el asunto es el
+ * vector clásico (Resend pasa el `subject` tal cual a la API, no sanitiza nada).
+ * Que el esquema zod ya los rechace no alcanza — esta función es exportada y no
+ * debe depender de que quien la llame haya validado antes.
+ *
+ * "Pre-diagnóstico" va adelante y no al final: en el celular el asunto se corta,
+ * y lo que tiene que distinguirse del EMAIL #1 ("Assessment: …") es justamente
+ * qué documento es.
+ */
+export function asuntoPreDiagnostico(lead: LeadAssessmentNormalizado): string {
+  return unaSolaLinea(`Pre-diagnóstico: ${lead.nombre} (${lead.empresa})`);
+}
+
+/**
+ * Envía el pre-diagnóstico ya renderizado (**EMAIL #2**, §11).
+ *
+ * **Va en texto plano, sin versión HTML, y es una decisión de uso, no una
+ * simplificación.** El documento es Markdown y su destino es que Daniela lo
+ * copie dentro del `assessment_template.md` v2 para completarlo: envuelto en
+ * HTML habría que escaparlo, se pegaría con etiquetas y perdería la estructura
+ * que lo hace utilizable. Texto plano preserva el documento tal cual y elimina
+ * de raíz la clase entera de bugs de escapado — no hay nada del lead que se
+ * interpole en markup.
+ *
+ * `Reply-To` es el correo de quien completó el formulario, igual que en el #1:
+ * los dos correos quedan respondibles desde la bandeja sin copiar direcciones.
+ *
+ * Nunca lanza. Quien la llama es el `after()` del route, que ya respondió 200 y
+ * lo único que puede hacer con el fallo es loguearlo.
+ */
+export async function enviarPreDiagnostico(
+  lead: LeadAssessmentNormalizado,
+  documento: string,
+): Promise<ResultadoEnvio> {
+  return enviar({
+    /*
+     * `ASSESSMENT_TO` vacío cae a la misma casilla del EMAIL #1 — que es lo
+     * que Daniela eligió (§19 #6: `contacto@arqdata.cl`, con la variable sin
+     * setear). Existe para poder derivar los pre-diagnósticos a otra bandeja
+     * sin tocar código ni mover los leads crudos.
+     */
+    to: envCon(process.env.ASSESSMENT_TO, destinoLead()),
+    replyTo: lead.email,
+    asunto: asuntoPreDiagnostico(lead),
+    texto: documento,
+  });
 }
