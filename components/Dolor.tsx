@@ -86,6 +86,9 @@ export default function Dolor() {
               <p className="text-sm text-muted leading-relaxed">
                 {dolor.descripcion}
               </p>
+              <p className="mt-3 font-mono text-xs text-brand-500 font-medium">
+                {dolor.costo}
+              </p>
             </div>
           ))}
         </div>

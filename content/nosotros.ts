@@ -1,21 +1,20 @@
 /**
  * Sección "Quiénes somos".
  *
- * Voz plural y por rol, sin nombres propios — es la narrativa aprobada
- * (2026-07-23) y la que sostiene que la marca sea `ArqData` y no una persona.
+ * No dar número de personas. Transmitir: equipo senior, combinación rara
+ * (datos + dev + IA), enfocado, comprometido. El tamaño se siente como
+ * virtud (agilidad, dedicación) no como limitación.
  */
 
 export const nosotros = {
   titulo: "Quiénes somos",
   parrafos: [
-    "ArqData es una consultora especializada en arquitectura de datos y automatización en AWS para empresas medianas en Chile.",
-    "Combinamos ingeniería de datos en producción, desarrollo full stack e inteligencia artificial para eliminar procesos manuales y darle visibilidad real a tu operación de datos.",
-    "Cada proyecto es liderado por profesionales senior de punta a punta. Sin intermediarios. Sin rotación. Sin sorpresas.",
+    "Un equipo técnico senior que combina arquitectura de datos, desarrollo e inteligencia artificial. Eso nos permite resolver el problema completo: desde el dato crudo hasta el producto funcionando en tu operación.",
+    "Trabajamos directo, sin intermediarios. Si necesitamos más manos para un proyecto, las traemos — pero quien responde somos nosotros. Nos quedamos hasta que tu equipo opere solo.",
   ],
   /** Se renderizan como badges en línea, en `--font-mono`. */
   credenciales: [
-    "AWS Certified",
-    "Producción en industria regulada",
-    "Ingeniería Civil Informática",
+    "Cloud Certified",
+    "Datos + Desarrollo + IA",
   ],
 } as const;
