@@ -158,7 +158,7 @@ Archivo: `content/servicios.ts`
 ```ts
 {
   slug: "finops",
-  nombre: "FinOps",
+  nombre: "Control y optimización de costos cloud",
   descripcion: "Visibilidad de costos cloud por equipo + optimización.",
   plazo: "4-6 semanas",
   inversion: "media",
@@ -170,14 +170,17 @@ Archivo: `content/servicios.ts`
 ```ts
 {
   slug: "finops",
-  nombre: "FinOps",
+  nombre: "Control y optimización de costos cloud",
   descripcion: "Visibilidad de costos cloud por equipo + optimización.",
   plazo: "3-5 semanas",
   inversion: "alta",
 },
 ```
 
-Guardás, y la tarjeta de FinOps en el sitio ya muestra los valores nuevos. El `slug` es el identificador interno: dejalo como está.
+Guardás, y el servicio ya muestra los valores nuevos donde se use. El `slug` es el identificador
+interno: **dejalo como está**. No lo ve ningún prospecto, y es la clave con la que el rango de
+inversión, el esquema del agente y el catálogo interno encuentran este servicio — cambiarlo rompe
+las tres cosas. El `nombre` sí es lo que se publica: sale en los datos estructurados que lee Google.
 
 ⚠️ `inversion` solo acepta **una de estas tres palabras**, escrita igual y entre comillas: `"acotada"`, `"media"` o `"alta"`. Cualquier otra cosa rompe el build (a propósito: es preferible a que la tarjeta salga con el dato en blanco).
 

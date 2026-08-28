@@ -145,7 +145,7 @@ describe("renderPreDiagnostico — las reglas de contenido", () => {
 
   it("nombra el servicio recomendado con su rango y plazo", () => {
     const doc = renderPreDiagnostico(lead(), salida({ servicioRecomendado: "finops" }), "a-evaluar");
-    expect(doc).toContain("FinOps");
+    expect(doc).toContain("Control y optimización de costos cloud");
     expect(doc).toContain("$8–18M CLP");
     expect(doc).toContain("4-6 semanas");
   });
