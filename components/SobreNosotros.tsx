@@ -4,8 +4,8 @@ import { site } from "@/content/site";
 /**
  * Sección 7 — "Quiénes somos".
  *
- * Copy en voz plural y por rol (sin nombres propios): es la narrativa aprobada
- * y vive completa en `content/nosotros.ts`. Acá solo se recorre.
+ * Estilo Credence: personas visibles con nombre y experiencia concreta.
+ * Sin foto de momento — nombre + rol + línea de experiencia es suficiente.
  *
  * Server Component.
  */
@@ -20,7 +20,31 @@ export default function SobreNosotros() {
           {nosotros.titulo}
         </h2>
 
-        {/* Medida de lectura acotada: párrafos de ~70 caracteres por línea. */}
+        {/* Personas del equipo */}
+        <div className="grid sm:grid-cols-2 gap-6 mb-10 max-w-3xl">
+          {/* Fundadora */}
+          <div className="bg-panel border border-line rounded-xl p-5">
+            <p className="font-semibold text-fg">{nosotros.fundadora.nombre}</p>
+            <p className="text-xs text-brand-500 font-mono mt-0.5">
+              {nosotros.fundadora.rol}
+            </p>
+            <p className="text-sm text-muted leading-relaxed mt-3">
+              {nosotros.fundadora.experiencia}
+            </p>
+          </div>
+          {/* Socio técnico */}
+          <div className="bg-panel border border-line rounded-xl p-5">
+            <p className="font-semibold text-fg">{nosotros.socio.nombre}</p>
+            <p className="text-xs text-brand-500 font-mono mt-0.5">
+              {nosotros.socio.rol}
+            </p>
+            <p className="text-sm text-muted leading-relaxed mt-3">
+              {nosotros.socio.experiencia}
+            </p>
+          </div>
+        </div>
+
+        {/* Párrafos descriptivos */}
         <div className="max-w-2xl space-y-4">
           {nosotros.parrafos.map((parrafo) => (
             <p key={parrafo} className="text-muted leading-relaxed">
@@ -29,11 +53,7 @@ export default function SobreNosotros() {
           ))}
         </div>
 
-        {/*
-         * Credenciales como badges en `font-mono`: el mismo recurso tipográfico
-         * de los numeradores del proceso, que es de donde sale el sabor
-         * "terminal" sin repintar nada de ámbar.
-         */}
+        {/* Credenciales */}
         <ul className="flex flex-wrap gap-2 mt-8">
           {nosotros.credenciales.map((credencial) => (
             <li
@@ -45,12 +65,7 @@ export default function SobreNosotros() {
           ))}
         </ul>
 
-        {/*
-         * Links externos: `target="_blank"` obliga a `rel="noopener
-         * noreferrer"` — sin `noopener` la pestaña abierta puede manipular a la
-         * que la abrió vía `window.opener`. El `sr-only` avisa del cambio de
-         * pestaña, que si no es un salto sin aviso para quien no ve la ventana.
-         */}
+        {/* Links */}
         <div className="flex flex-wrap gap-6 mt-8">
           <a
             href={site.linkedin}

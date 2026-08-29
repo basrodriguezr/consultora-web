@@ -4,6 +4,7 @@ import Diferencial from "@/components/Diferencial";
 import Dolor from "@/components/Dolor";
 import Hero from "@/components/Hero";
 import MiniCaso from "@/components/MiniCaso";
+import Outcomes from "@/components/Outcomes";
 import Proceso from "@/components/Proceso";
 import SobreNosotros from "@/components/SobreNosotros";
 import SocialProof from "@/components/SocialProof";
@@ -14,22 +15,24 @@ import SocialProof from "@/components/SocialProof";
  *
  * El orden no es estético, es el del argumento de venta:
  *
- *   dolor → prueba de mercado → CTA intermedio → por qué nosotros → cómo →
- *   ejemplo concreto → quiénes → CTA
+ *   dolor → ejemplo concreto (mock) → prueba de mercado → qué resolvemos →
+ *   CTA intermedio → por qué nosotros → cómo → quiénes → CTA
  *
- * Mover una sección cambia el argumento, no el layout. Nav y Footer viven en el
- * layout porque envuelven también a `/thank-you`.
+ * Cambio ago-2026: MiniCaso subió después de Dolor (el mock es la mejor
+ * sección visual y ahora se ve antes del scroll largo). Outcomes (servicios
+ * como resultados) se agregó entre SocialProof y CTA intermedio.
  */
 export default function Home() {
   return (
     <>
       <Hero />
       <Dolor />
+      <MiniCaso />
       <SocialProof />
+      <Outcomes />
       <CtaIntermedio />
       <Diferencial />
       <Proceso />
-      <MiniCaso />
       <SobreNosotros />
       <Contacto />
     </>
