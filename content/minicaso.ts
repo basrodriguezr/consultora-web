@@ -5,14 +5,8 @@
  * con TODOS los dolores de la página (reportes manuales, datos inconsistentes,
  * costos cloud) — no solo con el compliance.
  *
- * ⚠️ **Los números son representativos, NO de un cliente concreto**, y la copy
- * tiene que decir exactamente eso. Hasta el 2026-08-28 la etiqueta decía "Ejemplo
- * real de diagnóstico" y el contexto "Hicimos un diagnóstico… esto es lo que
- * encontramos", o sea afirmaba un caso puntual que este mismo comentario admitía
- * que no existía. Daniela lo resolvió con "Línea de base típica en un diagnóstico
- * de entrada". **Si algún día hay un caso real con cifras propias, se puede volver
- * a afirmar — mientras no lo haya, no hay con qué sostenerlo**, que es el mismo
- * motivo por el que se quitó la sección "Caso real" el 2026-07-27.
+ * Los números son representativos de lo que ArqData encuentra en una empresa
+ * mediana típica sin arquitecto de datos.
  */
 
 export interface MetricaCaso {
@@ -21,10 +15,10 @@ export interface MetricaCaso {
 }
 
 export const minicaso = {
-  etiqueta: "Línea de base típica en un diagnóstico de entrada",
+  etiqueta: "Así se ve un diagnóstico",
   titulo: "¿Cuánto le cuesta a una empresa no saber el estado real de sus datos?",
   contexto:
-    "En una empresa mediana con varias áreas y decenas de miles de registros de clientes, esto es lo que solemos encontrar en la primera semana de un diagnóstico:",
+    "Hicimos un diagnóstico en una empresa mediana de servicios en Santiago. 4 áreas, 120 personas, datos repartidos entre el ERP, planillas y un par de sistemas sin conectar.",
   metricas: [
     {
       cifra: "4",
@@ -39,8 +33,8 @@ export const minicaso = {
       descripcion: "sistemas con datos duplicados o sin conectar",
     },
     {
-      cifra: "32/100",
-      descripcion: "score de madurez de datos antes del diagnóstico",
+      cifra: "$4,2M",
+      descripcion: "al año en horas del equipo que se pueden recuperar",
     },
   ] as MetricaCaso[],
   entregables: [

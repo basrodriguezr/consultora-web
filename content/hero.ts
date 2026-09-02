@@ -13,14 +13,13 @@ export const hero = {
   titulo: "¿Tu equipo sigue armando reportes a mano",
   tituloDestacado: "todas las semanas?",
   bajada:
-    "En 2 semanas te decimos qué se puede automatizar y qué dejar como está. Sin cambiar de sistema, sin dependencia, sin sorpresas.",
+    "En 2 semanas te decimos qué automatizar y qué dejar como está. Sin cambiar de sistema, sin dependencia, precio cerrado.",
   /**
    * Línea de credenciales bajo el CTA. Se renderiza en `--font-mono` y en
    * `text-subtle`: es prueba, no titular.
    */
   proof: [
-    "Cloud Certified · 8+ años en producción",
-    "Industria regulada",
+    "8+ años en producción · Datos críticos de negocio",
     "Resultados en semanas, no meses",
   ],
 } as const;
