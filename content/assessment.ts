@@ -45,6 +45,26 @@ export const assessment = {
   aviso:
     "Usamos tus respuestas solo para preparar la conversación: no las vendemos ni te suscribimos a nada. El envío se procesa vía Resend.",
 
+  /**
+   * Invitación al formulario largo, que se muestra **después** de que alguien
+   * envió el formulario corto de la home.
+   *
+   * Es la opción A que eligió Daniela el 2026-08-29: la home sigue entregando el
+   * Calendly directo y sin calificar, y `/assessment` queda como un extra para
+   * quien ya convirtió. Por eso el texto ofrece **una conversación mejor**, no un
+   * requisito: quien llegó hasta acá ya agendó o ya dejó su correo, y pedirle
+   * quince campos más como condición sería cambiarle las reglas después de que
+   * cumplió.
+   *
+   * ⚠️ Vive acá y no en `content/contacto.ts` porque el día que la ruta cambie de
+   * nombre, el enlace y su copy tienen que moverse juntos.
+   */
+  invitacion: {
+    pregunta: "¿Quieres que la conversación rinda más?",
+    enlace: "Cuéntanos un poco más",
+    cierre: "Son 5 minutos y llegamos con contexto real.",
+  },
+
   boton: "Enviar respuestas",
   botonEnviando: "Enviando…",
 

@@ -18,17 +18,17 @@ interface RutaIndexable {
  * de URLs que le pedimos a Google que indexe. Una ruta que no queremos en los
  * resultados no va acá aunque exista y responda 200.
  *
- * Hoy el sitio tiene cuatro páginas y solo dos se anuncian acá.
+ * Hoy el sitio tiene cinco páginas y tres se anuncian acá.
  */
 const rutas: RutaIndexable[] = [
   { path: "/", changeFrequency: "monthly", priority: 1 },
   // Indexable y de baja prioridad: nadie la busca, pero que sea rastreable y
   // encontrable es parte de cumplir con la Ley 21.719.
   { path: "/privacidad", changeFrequency: "yearly", priority: 0.3 },
-  // Se descomenta cuando exista `app/api/assessment/route.ts` (paso 7 de la
-  // Fase 2). El porqué está en el bloque de abajo — leerlo antes de tocar esta
-  // línea.
-  // { path: "/assessment", changeFrequency: "monthly", priority: 0.8 },
+  // Entró al sitemap el 2026-08-29, cuando `app/api/assessment/route.ts` pasó a
+  // existir (paso 7): hasta entonces la página se servía pero su formulario
+  // posteaba a un 404, y anunciar eso habría sido peor que no anunciarlo.
+  { path: "/assessment", changeFrequency: "monthly", priority: 0.8 },
 ];
 
 /**

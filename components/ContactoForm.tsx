@@ -234,7 +234,7 @@ export default function ContactoForm() {
           perder el scroll. No hay redirect condicional a `/thank-you` porque no
           se puede saber desde acá si alguien agendó dentro del iframe.
         */
-        <Confirmacion nivelTitulo="h3" />
+        <Confirmacion nivelTitulo="h3" ofrecerDiagnostico />
       ) : (
         <form onSubmit={handleSubmit(enviar)} noValidate className="space-y-6">
           <div className="grid sm:grid-cols-2 gap-5">

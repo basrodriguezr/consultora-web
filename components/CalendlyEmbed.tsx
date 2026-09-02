@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+
+import { assessment } from "@/content/assessment";
 import { site } from "@/content/site";
 
 /**
@@ -153,6 +156,20 @@ interface ConfirmacionProps {
    * formulario de contacto son 4 campos y no tiene con qué calificar a nadie.
    */
   mostrarAgenda?: boolean;
+
+  /**
+   * `true` agrega el enlace a `/assessment` debajo de la confirmación.
+   *
+   * **El default es `false` a propósito, y los tres consumidores lo explican:**
+   * `AssessmentForm` no puede ofrecerlo —quien acaba de contestar quince campos
+   * no tiene que ver una invitación a contestarlos—, `/thank-you` es adonde cae
+   * quien ya agendó dentro de Calendly, y ahí la invitación es otra decisión que
+   * nadie tomó. El único que lo enciende es `ContactoForm`.
+   *
+   * Es la opción A que eligió Daniela el 2026-08-29: `/assessment` es un extra
+   * para quien ya convirtió, no un peaje antes de la agenda.
+   */
+  ofrecerDiagnostico?: boolean;
 }
 
 /**
@@ -171,6 +188,7 @@ interface ConfirmacionProps {
 export function Confirmacion({
   nivelTitulo = "h3",
   mostrarAgenda = true,
+  ofrecerDiagnostico = false,
 }: ConfirmacionProps) {
   const Titulo = nivelTitulo;
 
@@ -188,6 +206,16 @@ export function Confirmacion({
         <div className="mt-8">
           <CalendlyEmbed />
         </div>
+      )}
+
+      {ofrecerDiagnostico && (
+        <p className="mt-8 text-sm text-muted">
+          {assessment.invitacion.pregunta}{" "}
+          <Link className={CLASE_LINK} href="/assessment">
+            {assessment.invitacion.enlace}
+          </Link>
+          . {assessment.invitacion.cierre}
+        </p>
       )}
 
       <p className="mt-8 text-sm text-muted">
