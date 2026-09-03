@@ -19,10 +19,10 @@ describe("calcularCifras — del rango declarado al costo anual", () => {
    * página cuesta la credibilidad de todas las siguientes.
    */
   it.each([
-    ["<5", 3, 3 * 120_000 * 52],
-    ["5-15", 5, 5 * 120_000 * 52],
-    ["15-40", 15, 15 * 120_000 * 52],
-    [">40", 40, 40 * 120_000 * 52],
+    ["<5", 3, 3 * 13_000 * 52],
+    ["5-15", 5, 5 * 13_000 * 52],
+    ["15-40", 15, 15 * 13_000 * 52],
+    [">40", 40, 40 * 13_000 * 52],
   ] as const)("%s usa %i h/semana", (rango, horas, costo) => {
     const cifras = calcularCifras(rango, []);
     expect(cifras.horasSemana).toBe(horas);
@@ -50,9 +50,9 @@ describe("calcularCifras — del rango declarado al costo anual", () => {
 describe("calcularCifras — ahorro y saturación", () => {
   it("suma las fracciones de los tres quick wins", () => {
     const cifras = calcularCifras("5-15", [0.2, 0.1, 0.1]);
-    // 5 h × 120.000 × 52 = 31.200.000 · 40% = 12.480.000
+    // 5 h × 13.000 × 52 = 3.380.000 · 40% = 1.352.000
     expect(cifras.fraccionLiberada).toBeCloseTo(0.4);
-    expect(cifras.ahorroAnual).toBe(12_480_000);
+    expect(cifras.ahorroAnual).toBe(1_352_000);
   });
 
   /**

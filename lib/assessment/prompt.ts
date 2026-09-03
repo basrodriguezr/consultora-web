@@ -342,9 +342,19 @@ export function construirSystem(): string[] {
  * medido"*, que es una respuesta legítima, no un hueco. Es la misma lección que
  * el bug de `"no-se h/semana"` del renderer.
  *
- * **`nombre` y `email` no se mandan.** No aportan nada al diagnóstico y son los
- * dos únicos datos de contacto del lead; el documento los arma el código, que sí
- * los tiene. Es dato personal que no tiene por qué salir hacia el modelo.
+ * **`nombre`, `email` y `sponsor` no se mandan.** Los dos primeros no aportan
+ * nada al diagnóstico y son los únicos datos de contacto del lead; el documento
+ * los arma el código, que sí los tiene.
+ *
+ * **`sponsor` salió el 2026-09-02, por decisión de Daniela: "solo el cargo, no el
+ * nombre".** Y se sacó entero en vez de recortarlo porque **es texto libre**: la
+ * persona escribe lo que quiere ("Juan Pérez, gerente de finanzas"), así que no
+ * hay forma confiable de quedarse con el cargo y descartar el nombre sin
+ * adivinar. Ante un campo libre que puede contener un nombre propio, la única
+ * garantía es no enviarlo.
+ *
+ * ⚠️ **El campo se sigue pidiendo y Daniela lo sigue viendo**: viaja en el EMAIL
+ * #1 con las respuestas crudas. Lo que cambió es que no llega al modelo.
  */
 export function construirMensajeUsuario(lead: LeadAssessmentNormalizado): string {
   const fuentes =
@@ -369,7 +379,6 @@ export function construirMensajeUsuario(lead: LeadAssessmentNormalizado): string
     `Horas por semana que consume el proceso: ${
       lead.horasSemanaProceso ? ETIQUETAS_HORAS[lead.horasSemanaProceso] : SIN_RESPUESTA
     }`,
-    `Sponsor del proyecto: ${lead.sponsor ?? SIN_RESPUESTA}`,
     `¿Evalúan cambiar de sistema?: ${
       lead.evaluandoCambio ? ETIQUETAS_EVALUANDO_CAMBIO[lead.evaluandoCambio] : SIN_RESPUESTA
     }`,

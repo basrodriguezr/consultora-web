@@ -9,8 +9,22 @@ import type { RangoHoras } from "@/lib/leads";
  * aporta proporciones (`fraccionHorasLiberadas`).
  */
 
-/** Costo cargado de una hora de trabajo interno, en CLP. */
-const COSTO_HORA_CLP = 120_000;
+/**
+ * Costo cargado de una hora de trabajo interno, en CLP.
+ *
+ * 📏 **$13.000, no una tarifa de venta.** Sale de un sueldo de ~$1,5M más cargas,
+ * dividido en 160 horas al mes. Estuvo en `120_000` hasta el 2026-09-02, que es
+ * tarifa de consultoría: con ese valor un proceso de 15 h/semana daba **$93,6M al
+ * año**, y el mismo caso da ahora **$10,2M**.
+ *
+ * El comentario ya decía "interno" y el número era de venta — la intención estaba
+ * bien y el valor no. Decisión de Daniela, y la razón importa: *"sé que es
+ * conservador (subvalora el problema real, que es el atraso del cierre y las
+ * cifras en conflicto, no solo el sueldo), pero prefiero un número que defienda
+ * sin dudar"*. **Un monto que la gerencia puede discutir vale menos que uno más
+ * chico que nadie discute.**
+ */
+const COSTO_HORA_CLP = 13_000;
 
 const SEMANAS_POR_ANIO = 52;
 
