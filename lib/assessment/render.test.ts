@@ -183,6 +183,37 @@ describe("renderPreDiagnostico — las reglas de contenido", () => {
   );
 
   /**
+   * El hueco que destapó la auditoría del 2026-09-02, y que costó un defecto que
+   * llegaba a una gerencia.
+   *
+   * El golden de arriba congela un caso con fracciones estimadas, y el test de
+   * "sin horas declaradas" toma la OTRA rama (`horasSemana === null`). **El caso
+   * intermedio —horas declaradas pero ninguna fracción estimable— no lo tocaba
+   * nadie**, y ahí `ahorroAnual` daba `0` y el documento imprimía "Ahorro
+   * estimado año 1: $0,0M CLP" al lado de una inversión de $8-12M.
+   *
+   * Es la misma lección que el bug de `"no-se h/semana"`: **el golden congela la
+   * forma del documento, no el dominio de los valores.**
+   */
+  it("con horas pero sin ninguna fracción estimable, no imprime $0", () => {
+    const doc = renderPreDiagnostico(
+      lead(),
+      salida({
+        quickWins: salida().quickWins.map((qw) => ({
+          ...qw,
+          fraccionHorasLiberadas: null,
+        })) as SalidaAssessment["quickWins"],
+      }),
+      "a-evaluar",
+    );
+
+    expect(doc).not.toContain("$0,0M");
+    expect(doc).toContain("**Ahorro estimado año 1:** [por confirmar en discovery]");
+    // El costo del problema sí se conoce: depende de las horas, no de las fracciones.
+    expect(doc).toContain("**Costo estimado del problema:** $10,1M CLP al año");
+  });
+
+  /**
    * Sin horas declaradas no hay cifra: sale la marca de pendiente y **nunca un
    * `$0`**. "No sé cuántas horas me consume" no significa que no cueste nada.
    */

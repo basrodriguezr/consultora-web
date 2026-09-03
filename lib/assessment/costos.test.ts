@@ -73,9 +73,26 @@ describe("calcularCifras — ahorro y saturación", () => {
     expect(cifras.fraccionLiberada).toBeCloseTo(0.2);
   });
 
-  it("sin quick wins estimables el ahorro es cero, no null", () => {
+  /**
+   * Este test afirmaba lo contrario hasta el 2026-09-03 ("el ahorro es cero, no
+   * null") y esa era la decisión equivocada: el documento imprime `null` como
+   * "[por confirmar]" y `0` como **"$0,0M CLP"**, que se lee como medido. Un
+   * ahorro de cero pesos junto a una inversión de $8-12M es un argumento en
+   * contra de la propuesta.
+   *
+   * No es un caso de borde: la regla 1 del prompt empuja al modelo hacia `null`
+   * cuando no puede fundamentar, así que las tres en `null` es el resultado del
+   * modelo bien comportado.
+   */
+  it("sin ninguna fracción estimable el ahorro es null, no cero", () => {
     const cifras = calcularCifras("5-15", [null, null, null]);
-    expect(cifras.ahorroAnual).toBe(0);
+    expect(cifras.ahorroAnual).toBeNull();
+    expect(cifras.fraccionLiberada).toBeNull();
+  });
+
+  it("pero una sola fracción estimable ya produce un número", () => {
+    const cifras = calcularCifras("5-15", [0.2, null, null]);
+    expect(cifras.ahorroAnual).toBe(Math.round(5 * 13_000 * 52 * 0.2));
   });
 });
 
@@ -85,8 +102,16 @@ describe("formato de montos", () => {
     expect(montoLegible(3_000_000)).toBe("$3,0M CLP");
   });
 
-  /** Nunca imprime `$0` donde no hay dato: son cosas distintas. */
-  it("traduce null a la marca de pendiente", () => {
+  /**
+   * `null` y `0` son cosas distintas y se imprimen distinto, a propósito: la
+   * marca se lee como preliminar y el monto como medido.
+   *
+   * ⚠️ Que `montoOPorConfirmar(0)` imprima `"$0,0M CLP"` es correcto —es un
+   * monto real— y por eso **la responsabilidad de no pasarle un cero espurio es
+   * de quien llama**. `calcularCifras` la cumple desde el 2026-09-03: cuando no
+   * hay ninguna fracción estimable devuelve `null`, no `0`.
+   */
+  it("distingue null de cero", () => {
     expect(montoOPorConfirmar(null)).toBe("[por confirmar en discovery]");
     expect(montoOPorConfirmar(0)).toBe("$0,0M CLP");
   });

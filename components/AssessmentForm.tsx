@@ -51,8 +51,28 @@ type Estado = "idle" | "exito" | "error";
 
 const CLASE_ETIQUETA = "block text-sm font-medium text-fg mb-2";
 
+/*
+ * ⚠️ **`border-line-strong`, no `border-line`, y esto es accesibilidad, no
+ * estética.** Corregido el 2026-09-03.
+ *
+ * Medido: `line` sobre `panel` da **1,29:1 en claro y 1,22:1 en oscuro**, contra
+ * el mínimo de 3:1 que pide WCAG 1.4.11 para el borde que identifica un control.
+ * Y el relleno tampoco se distingue de la página (1,06:1), así que con `line`
+ * **nada indicaba dónde termina el campo**. `line-strong` da 3,64 y 3,23.
+ *
+ * El único estado que cumplía era `hover:`, **que en móvil no existe**, y este
+ * sitio es mobile first.
+ *
+ * 🛑 **Ni Lighthouse ni axe lo detectan** — el criterio 1.4.11 sobre bordes no
+ * está automatizado, así que el 100/100 de julio convivía con esto. Si alguien
+ * "simplifica" esto de vuelta a `border-line`, no va a haber ninguna métrica en
+ * rojo que lo delate.
+ *
+ * `border-line` sigue siendo correcto para separadores y bordes de tarjeta: son
+ * decorativos y no tienen requisito de contraste.
+ */
 const CLASE_INPUT =
-  "w-full rounded-lg bg-panel border border-line px-4 py-3 text-sm text-fg " +
+  "w-full rounded-lg bg-panel border border-line-strong px-4 py-3 text-sm text-fg " +
   "placeholder:text-subtle hover:border-line-strong transition disabled:opacity-60";
 
 const CLASE_ERROR = "mt-2 text-xs text-error";
@@ -61,7 +81,7 @@ const CLASE_AYUDA = "mt-2 text-xs text-subtle";
 
 /** Caja de una opción de radio o checkbox. Mismo tratamiento que `ContactoForm`. */
 const CLASE_OPCION =
-  "flex items-start gap-3 rounded-lg border border-line bg-panel px-4 py-3 " +
+  "flex items-start gap-3 rounded-lg border border-line-strong bg-panel px-4 py-3 " +
   "cursor-pointer hover:border-line-strong has-[:checked]:border-brand-500 transition";
 
 const CLASE_TITULO_GRUPO = "text-lg font-semibold text-fg";

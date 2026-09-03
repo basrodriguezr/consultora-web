@@ -141,7 +141,7 @@ export default function MockupDashboard() {
                       height: s.altura,
                       background: s.destacada
                         ? "linear-gradient(180deg, var(--color-brand-400), var(--color-brand-600))"
-                        : "color-mix(in srgb, var(--color-line-strong) 45%, transparent)",
+                        : "color-mix(in srgb, var(--color-line-strong) 75%, transparent)",
                     }}
                   />
                   <span className="text-[10px]" style={{ color: "var(--color-subtle)" }}>{s.semana}</span>

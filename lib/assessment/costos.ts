@@ -92,6 +92,30 @@ export function calcularCifras(
 
   const costoAnual = horasSemana * COSTO_HORA_CLP * SEMANAS_POR_ANIO;
 
+  /*
+   * 🛑 **Si NINGUNA fracción es estimable, el ahorro es `null`, no cero.**
+   *
+   * Son dos afirmaciones distintas y el documento las imprime distinto: `null`
+   * sale como "[por confirmar en discovery]" y se lee como preliminar; `0` sale
+   * como **"$0,0M CLP"** y se lee como medido. Un documento que dice "inversión
+   * $8–12M · ahorro estimado año 1: $0,0M" al lado no es un hueco, es un
+   * argumento en contra de la propia propuesta.
+   *
+   * Y no es un caso de borde: la regla 1 del prompt empuja al modelo a devolver
+   * `null` cuando no puede fundamentar una fracción, así que las tres en `null`
+   * es el resultado del modelo **bien comportado**, no de uno que falló.
+   *
+   * Una sola fracción estimada de las tres sí suma y sí produce un número: lo
+   * que se distingue acá es "no pudimos estimar nada" de "estimamos que no
+   * ahorra". Es el mismo argumento por el que `"no-se"` en las horas no vale
+   * cero horas.
+   */
+  const ningunaEstimable = fracciones.every((fraccion) => fraccion === null);
+
+  if (ningunaEstimable) {
+    return { horasSemana, costoAnual, ahorroAnual: null, fraccionLiberada: null };
+  }
+
   const suma = fracciones.reduce<number>(
     (acumulado, fraccion) => acumulado + (fraccion ?? 0),
     0,
@@ -120,7 +144,15 @@ export function montoLegible(clp: number): string {
   })}M CLP`;
 }
 
-/** Texto de una cifra que puede no existir. Nunca imprime `$0`. */
+/**
+ * Texto de una cifra que puede no existir.
+ *
+ * ⚠️ **Traduce `null`, no cero.** El comentario anterior decía "nunca imprime
+ * `$0`" y era falso: un `0` legítimo sale como `"$0,0M CLP"`, y eso está bien
+ * porque es un monto real. Lo que no puede pasar es que llegue un cero que en
+ * realidad significa "no se pudo estimar" — eso lo garantiza `calcularCifras`,
+ * que devuelve `null` cuando ninguna fracción es estimable.
+ */
 export function montoOPorConfirmar(clp: number | null): string {
   return clp === null ? "[por confirmar en discovery]" : montoLegible(clp);
 }
