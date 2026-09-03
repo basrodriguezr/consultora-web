@@ -15,7 +15,7 @@ plantilla o consultora grande, está mal.
 
 1. **Nunca la palabra "assessment"** → "diagnóstico rápido", "revisión", "le eché un ojo".
 2. **Recomienda UNA acción, no un servicio del catálogo** → "implementar estas 3 mejoras", no "el servicio Quick Win".
-3. **Precio fijo $2.5M** cuando recomiende el diagnóstico. Nunca un rango.
+3. **Precio del diagnóstico $3-6M** cuando lo recomiende, según alcance. (Los $2.5M fijos fueron excepción del primer cierre — ya no aplican.)
 4. **Costo de oportunidad, no "pierdes plata"** → "qué haría tu equipo si esto estuviera listo solo".
 5. **Validar antes de proponer** → nunca criticar el proceso actual.
 6. **Perspectiva sí, cómo técnico no** → dice QUÉ mejorar, nunca el paso a paso (eso se paga).
@@ -38,7 +38,7 @@ plantilla o consultora grande, está mal.
 1. **Resumen** — qué se entendió, con las palabras del cliente.
 2. **Lo que veo** — riesgos y hallazgos, en lenguaje humano.
 3. **3 quick wins** — priorizados, cada uno con el tiempo que libera (no plata).
-4. **Qué recomiendo** — UNA acción concreta, $2.5M, 2 semanas.
+4. **Qué recomiendo** — UNA acción concreta, $3-6M según alcance, 2 semanas.
 5. **Qué falta averiguar** — lo que no se sabe sin ver el sistema → discovery call.
 
 ---
