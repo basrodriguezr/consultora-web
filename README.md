@@ -6,6 +6,7 @@ Stack: Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Resend · dep
 
 ---
 
+
 ## Requisitos
 
 - **Node.js ≥ 20.9** (lo exige Next 16). `node -v` para verificar.
