@@ -69,6 +69,47 @@ export const LIMITE_ASSESSMENT: OpcionesLimite = {
 };
 
 /**
+ * Tope **global** de llamadas al modelo por hora — no por IP.
+ *
+ * ## Qué problema resuelve, que NO es el que parece
+ *
+ * `LIMITE_ASSESSMENT` cuenta por dirección IP, así que el techo real del abuso
+ * es `instancias × IPs × 2`. Un pool de proxies baratos vuelve esa cuenta
+ * irrelevante, y el contador vive en memoria por instancia de función, así que
+ * además se diluye solo bajo concurrencia (medido: con 12 requests simultáneas
+ * ya estando en 429, una pasó en una instancia fría).
+ *
+ * Este balde **no cuenta por IP: cuenta a secas**. Con eso el techo pasa a ser
+ * `instancias × 10`, **independiente de cuántas direcciones tenga quien abusa**
+ * — que es justo la variable que no controlamos.
+ *
+ * ## Por qué 10 y no un número más ajustado
+ *
+ * No está dimensionado contra la capacidad teórica sino contra el volumen real:
+ * la consultora recibe unos pocos leads al mes. Diez en una hora ya sería un día
+ * extraordinario, así que no estorba a nadie legítimo ni siquiera después de una
+ * publicación en LinkedIn. Si algún día ese número molesta, es una buena noticia
+ * y se sube.
+ *
+ * ## ⚠️ Lo que este balde NO hace, y conviene no confundirse
+ *
+ * **No protege del todo la cuota de Resend.** El EMAIL #1 con las respuestas
+ * crudas sale ANTES de la puerta del §8 y de este tope, porque el §11 exige que
+ * ningún lead se pierda. O sea bajo abuso este balde corta el EMAIL #2 y el
+ * gasto de tokens, pero el EMAIL #1 sigue consumiendo cuota. Reduce el daño a la
+ * mitad; no lo elimina. Eliminarlo pediría limitar los envíos mismos, que es
+ * exactamente lo que no queremos hacer.
+ */
+export const LIMITE_MODELO_GLOBAL: OpcionesLimite = {
+  namespace: "modelo-global",
+  max: 10,
+  ventanaMs: 60 * 60 * 1000,
+};
+
+/** La única clave del balde global: no discrimina origen, por diseño. */
+export const CLAVE_GLOBAL = "global";
+
+/**
  * Techo de IPs recordadas. Sin esto el mapa crece sin límite y el propio
  * anti-abuso se vuelve el vector: basta variar la IP de origen para inflar la
  * memoria del proceso.
@@ -188,6 +229,19 @@ export function identificarCliente(request: Request): string {
  * @param clave    identificador del cliente (ver `identificarCliente`)
  * @param ahora    inyectable para poder testear sin depender del reloj
  */
+/**
+ * Vacía el almacén. **Existe para los tests y no se llama en producción.**
+ *
+ * Hasta que apareció `LIMITE_MODELO_GLOBAL` no hacía falta: los baldes se
+ * indexaban por IP, así que cada test usaba una dirección distinta y quedaba
+ * aislado solo. **Un balde global rompe ese truco por definición** —esa es
+ * justamente su gracia— y sin una forma de reiniciarlo los tests se contaminan
+ * entre sí en el orden en que corran, que es la peor clase de test frágil.
+ */
+export function reiniciarLimites(): void {
+  almacen.clear();
+}
+
 export function consumirCon(
   opciones: OpcionesLimite,
   clave: string,

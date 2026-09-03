@@ -13,7 +13,13 @@ import {
   type RespuestaAssessment,
 } from "@/lib/leads";
 import { procesarLead } from "@/lib/procesar-lead";
-import { consumirCon, identificarCliente, LIMITE_ASSESSMENT } from "@/lib/rate-limit";
+import {
+  CLAVE_GLOBAL,
+  consumirCon,
+  identificarCliente,
+  LIMITE_ASSESSMENT,
+  LIMITE_MODELO_GLOBAL,
+} from "@/lib/rate-limit";
 
 /**
  * `POST /api/assessment` — recibe el formulario largo de `/assessment`,
@@ -262,7 +268,35 @@ export async function POST(request: Request): Promise<Response> {
    * de `procesarLead` — el mismo booleano que viaja en la respuesta HTTP. Así
    * es imposible que la agenda y el diagnóstico se contradigan sobre un lead.
    */
-  if (calificado) {
+  /*
+   * 5b. El tope GLOBAL de llamadas al modelo.
+   *
+   * Va después de la puerta del §8 y antes de agendar el `after()`: no tiene
+   * sentido reservar trabajo que vamos a descartar.
+   *
+   * 🛑 **Cuando este balde se agota, la respuesta HTTP NO cambia.** Quien
+   * completó el formulario no hizo nada malo: recibe su `ok`, su Calendly si
+   * corresponde, y su EMAIL #1 ya salió. Castigarlo por una condición global
+   * —que puede haber causado otra persona— sería trasladarle a un lead legítimo
+   * el costo de un abuso ajeno. Lo único que se suprime es el documento.
+   *
+   * Y se loguea como `warn`, no como `error`: esto es una supresión deliberada
+   * que funcionó, no una falla. Mezclarla con los errores reales del `after()`
+   * entrena a ignorar la única línea de diagnóstico que tiene este camino.
+   */
+  const cupoModelo = calificado
+    ? consumirCon(LIMITE_MODELO_GLOBAL, CLAVE_GLOBAL)
+    : null;
+
+  if (calificado && cupoModelo && !cupoModelo.permitido) {
+    console.warn(
+      `[assessment] tope global de llamadas al modelo alcanzado ` +
+        `(${LIMITE_MODELO_GLOBAL.max}/hora). Se omite el pre-diagnóstico; ` +
+        `el EMAIL #1 con las respuestas ya salió.`,
+    );
+  }
+
+  if (calificado && cupoModelo?.permitido) {
     after(async () => {
       /*
        * Nadie está esperando esto: es un correo a Daniela, no algo que la

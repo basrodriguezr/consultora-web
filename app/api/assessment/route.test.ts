@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { RespuestaAssessment } from "@/lib/leads";
+import {
+  CLAVE_GLOBAL,
+  consumirCon,
+  LIMITE_MODELO_GLOBAL,
+  reiniciarLimites,
+} from "@/lib/rate-limit";
 
 /**
  * Tests de integración del endpoint del assessment.
@@ -104,6 +110,13 @@ const LEAD_NO_CALIFICA = {
 const SALIDA_DEL_MODELO = { resumen: "lo que sea" };
 
 beforeEach(() => {
+  /*
+   * El balde global de llamadas al modelo no se indexa por IP, así que el truco
+   * de usar una dirección nueva por test no lo aísla. Sin este reinicio, los
+   * tests se contaminan según el orden en que corran.
+   */
+  reiniciarLimites();
+
   tareasDiferidas.length = 0;
 
   enviarEmailLead.mockReset();
@@ -446,5 +459,48 @@ describe("POST /api/assessment — el pre-diagnóstico (EMAIL #2)", () => {
 
     await expect(correrDiferidas()).resolves.toBeUndefined();
     expect(enviarPreDiagnostico).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("POST /api/assessment — el tope global de llamadas al modelo", () => {
+  /**
+   * El balde por IP deja el techo del abuso en `instancias × IPs × 2`, y quien
+   * tenga direcciones de sobra lo vuelve irrelevante. Este tope no discrimina
+   * origen, así que el techo pasa a depender solo de cuántas instancias hay.
+   *
+   * Lo que se verifica acá es lo que hace ese tope cuando muerde: **suprime el
+   * documento y NADA MÁS**.
+   */
+  it("agotado el cupo, no llama al modelo", async () => {
+    for (let i = 0; i < LIMITE_MODELO_GLOBAL.max; i += 1) {
+      consumirCon(LIMITE_MODELO_GLOBAL, CLAVE_GLOBAL);
+    }
+
+    const respuesta = await POST(pedir(LEAD_VALIDO));
+
+    expect(generarPreDiagnostico).not.toHaveBeenCalled();
+    expect(tareasDiferidas).toHaveLength(0);
+    expect(respuesta.status).toBe(200);
+  });
+
+  /**
+   * 🛑 El punto más importante de los dos.
+   *
+   * Quien completó el formulario no hizo nada malo: el cupo lo pudo haber
+   * agotado otra persona. Degradarle la respuesta sería trasladarle a un lead
+   * legítimo el costo de un abuso ajeno — y encima romper la promesa del §8,
+   * donde `calificado: true` es lo que le muestra la agenda.
+   */
+  it("agotado el cupo, la respuesta al lead no cambia", async () => {
+    for (let i = 0; i < LIMITE_MODELO_GLOBAL.max; i += 1) {
+      consumirCon(LIMITE_MODELO_GLOBAL, CLAVE_GLOBAL);
+    }
+
+    const respuesta = await POST(pedir(LEAD_VALIDO));
+    const cuerpo = (await respuesta.json()) as RespuestaAssessment;
+
+    expect(cuerpo.ok).toBe(true);
+    if (cuerpo.ok) expect(cuerpo.calificado).toBe(true);
+    expect(enviarEmailLead).toHaveBeenCalledTimes(1);
   });
 });
