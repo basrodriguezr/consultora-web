@@ -316,3 +316,5 @@ Pendientes técnicos conocidos:
 - [ ] **Calendly como link, no como embed** — el plan original pedía el widget inline.
 - [ ] **Blog en MDX** — planificado, **no implementado**: no existen `app/blog/` ni `content/blog/`. La base ya está preparada: `lib/seo.ts` tiene la plantilla de títulos y `app/sitemap.ts` tiene la ruta `/blog` comentada, lista para descomentar.
 - [ ] **CI** — la suite existe pero nada la corre automáticamente. Falta un workflow de GitHub Actions con `tsc` + `lint` + `test` + `build` en cada push y PR; sin eso los tests se dejan de correr en dos semanas.
+
+<!-- deploy check 2026-09-02 -->
