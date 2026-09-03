@@ -18,8 +18,18 @@
  * relación sea imposible de romper por descuido, y que subir de plan en Vercel
  * ajuste el timeout solo.
  *
- * 🛑 **El route del paso 7 hace `export const maxDuration = MAX_DURATION_SEGUNDOS`.**
- * No escribe un `60` propio: el número vive acá y en ningún otro lado.
+ * 🛑 **El route NO puede importar esta constante, y eso NO es un descuido.**
+ * Lo natural sería `export const maxDuration = MAX_DURATION_SEGUNDOS`, pero
+ * **Next 16.2.11 lo rechaza**: analiza la config de segmento de forma estática y
+ * `next build` corta con *"Invalid segment configuration export detected"*.
+ * Comprobado con el build, no deducido — el mismo archivo compila apenas se
+ * reemplaza por el literal.
+ *
+ * Por eso `app/api/assessment/route.ts` escribe `export const maxDuration = 60`
+ * a mano, y **lo que impide que los dos números diverjan es un test**, no el
+ * sistema de tipos: `route.test.ts` afirma que ese literal es igual a
+ * `MAX_DURATION_SEGUNDOS`. Si cambiás el valor de acá, la suite se pone en rojo
+ * hasta que actualices el route. Esa es la red; no la borres.
  *
  * ## Por qué NO es `server-only`
  *

@@ -43,7 +43,7 @@ export const assessment = {
    * commit.
    */
   aviso:
-    "Usamos tus respuestas solo para preparar la conversación: no las vendemos ni te suscribimos a nada. El envío se procesa vía Resend.",
+    "Usamos tus respuestas solo para preparar la conversación: no las vendemos ni te suscribimos a nada. El envío se procesa vía Resend, y tus respuestas —sin tu nombre ni tu correo— se analizan con un modelo de Anthropic para que lleguemos a la reunión con contexto. Más detalle en la política de privacidad.",
 
   /**
    * Invitación al formulario largo, que se muestra **después** de que alguien
