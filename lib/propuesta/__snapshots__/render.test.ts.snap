@@ -1,0 +1,148 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderPropuesta — golden > congela el documento completo 1`] = `
+"BORRADOR — pendiente de revisión y firma
+
+# Propuesta de Servicios Profesionales
+
+**Para**: RetailCo SpA
+**De**: ArqData — Consultoría de Arquitectura de Datos
+**Fecha**: 3 de septiembre de 2026
+**Validez**: 30 días (hasta el 3 de octubre de 2026)
+
+---
+
+## 1. Contexto
+
+RetailCo necesita una visión única de sus ventas para decidir sobre campañas y stock antes de Black Friday.
+
+Hoy Shopify se exporta a mano cada lunes, cada analista saca su propio reporte de Google Ads y el Excel del gerente comercial es la referencia que nadie valida.
+
+## 2. Solución Propuesta
+
+Construimos una plataforma de datos en la cuenta AWS de RetailCo que consolida Shopify, Google Ads y el CRM en un modelo dimensional único, con dashboards de gestión sobre esa fuente.
+
+\`\`\`
+Extracción  →  Transformación  →  Almacenamiento  →  Consumo
+\`\`\`
+
+- **Extracción** — Shopify, Google Ads y PostgreSQL.
+- **Transformación** — Modelo dimensional con tests de calidad.
+- **Almacenamiento** — Redshift en la cuenta del cliente.
+- **Consumo** — Dashboards ejecutivos y alertas.
+
+### Componentes principales
+
+| Componente | Tecnología | Función |
+| --- | --- | --- |
+| Ingesta | AWS Glue | Carga incremental desde las APIs de Shopify y Google Ads. |
+| Transformación | dbt | Modelo dimensional, tests de calidad y documentación. |
+| Consumo | QuickSight | Dashboards de venta y campañas para gerencia. |
+
+## 3. Alcance
+
+### Incluido
+
+| # | Entregable | Descripción | Semana |
+| --- | --- | --- | --- |
+| 1 | Diseño de arquitectura | Diagrama, ADRs y modelo de datos validado con el equipo. | 1-2 |
+| 2 | Implementación del pipeline | Código productivo en la cuenta AWS de RetailCo. | 3-6 |
+| 3 | Tests y validaciones | Calidad de datos y CI/CD. | 7 |
+| 4 | Documentación y capacitación | Runbook, reglas de negocio y dos sesiones con el equipo. | 8 |
+
+### Fuera de alcance
+
+- Migración de datos históricos anteriores a 2024.
+- Desarrollo de dashboards fuera de los tres acordados.
+- Soporte 24/7 o SLA de tiempo de respuesta post-proyecto.
+- Cambios de alcance no acordados por escrito.
+- Licencias de software de terceros que el cliente requiera.
+
+## 4. Timeline
+
+\`\`\`
+Semanas 1-2: Diseño de arquitectura
+Semanas 3-6: Implementación del pipeline
+Semana 7: Tests y validaciones
+Semana 8: Documentación y capacitación
+\`\`\`
+
+**Duración total**: 8 semanas
+**Dedicación**: 30 horas/semana
+**Plazo indicado por el cliente**: Black Friday, noviembre 2026
+
+## 5. Equipo
+
+| Rol | Dedicación |
+| --- | --- |
+| Data Architect (líder) | 20h/semana |
+| Ingeniero de plataforma | 10h/semana |
+
+## 6. Inversión
+
+**Servicio**: Reportabilidad y Tableros de Gestión
+
+| Concepto | Monto (CLP neto) |
+| --- | --- |
+| Implementación completa | $25.000.000 |
+| **Total** | **$25.000.000 + IVA** |
+
+IVA (19%): $4.750.000 · Total con IVA: $29.750.000
+
+### Forma de pago
+
+| Hito | % | Monto | Cuándo |
+| --- | --- | --- | --- |
+| Inicio del proyecto | 50% | $12.500.000 | Al firmar |
+| Entrega final | 50% | $12.500.000 | Semana 8 |
+
+### Costos de infraestructura (separados)
+
+La infraestructura cloud es pagada directamente por el cliente en su propia cuenta.
+Costo mensual estimado: [FALTA: estimar el costo mensual de infraestructura una vez cerrada la arquitectura]
+
+## 7. Supuestos
+
+- Las APIs de Shopify y Google Ads se mantienen disponibles con los permisos actuales.
+- El cliente provee acceso a su cuenta cloud (IAM role o equivalente).
+- El cliente provee acceso a las fuentes de datos necesarias.
+- Se asigna 1 persona de contacto interno para validaciones.
+- Reuniones de seguimiento semanales (30 min).
+- Cambios de alcance se cotizan aparte.
+
+## 8. Garantía
+
+- 30 días de soporte post-entrega incluidos (bugs, ajustes menores).
+- Código entregado con documentación completa.
+- Infraestructura reproducible con Terraform (re-desplegable).
+
+## 9. Próximos pasos
+
+1. Revisión de esta propuesta.
+2. Ajustes si corresponde.
+3. Firma y pago del 50% inicial.
+4. Kick-off (semana siguiente).
+
+---
+
+**ArqData** — Consultoría de Arquitectura de Datos
+contacto@arqdata.cl
+
+_Firma pendiente — agregar "Daniela Chávez — Data Architect" al aprobar._
+
+---
+
+_Lo que sigue es interno y se borra antes de enviar._
+
+## Qué falta confirmar antes de enviar
+
+- [FALTA: Confirmar el volumen diario de la tabla de ventas.]
+- [FALTA: Confirmar quién es el dueño del dato de clientes.]
+- [FALTA: estimar el costo mensual de infraestructura una vez cerrada la arquitectura] (§6)
+
+## Cómo se cotizó
+
+- Servicio del catálogo: **Reportabilidad y Tableros de Gestión**
+- Posición en el rango: **medio**
+- Tres fuentes con APIs estables y un consumidor claro, pero sin equipo interno que opere lo entregado después de la puesta en marcha."
+`;
