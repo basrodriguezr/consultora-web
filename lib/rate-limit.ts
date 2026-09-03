@@ -56,6 +56,19 @@ export const LIMITE_CONTACTO: OpcionesLimite = {
 };
 
 /**
+ * El balde de `/api/assessment` (§12 del plan de Fase 2). Mucho más angosto que
+ * el de contacto, y por una razón de costo: cada request acá gasta **un email
+ * más tokens pagos** de la API de Claude, mientras que una de contacto gasta un
+ * email. Completar quince campos a mano es además un acto deliberado: nadie
+ * manda tres en una hora sin querer.
+ */
+export const LIMITE_ASSESSMENT: OpcionesLimite = {
+  namespace: "assessment",
+  max: 2,
+  ventanaMs: 60 * 60 * 1000,
+};
+
+/**
  * Techo de IPs recordadas. Sin esto el mapa crece sin límite y el propio
  * anti-abuso se vuelve el vector: basta variar la IP de origen para inflar la
  * memoria del proceso.

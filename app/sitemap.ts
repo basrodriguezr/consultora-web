@@ -18,13 +18,17 @@ interface RutaIndexable {
  * de URLs que le pedimos a Google que indexe. Una ruta que no queremos en los
  * resultados no va acá aunque exista y responda 200.
  *
- * Hoy el sitio tiene tres páginas y dos son indexables.
+ * Hoy el sitio tiene cinco páginas y tres se anuncian acá.
  */
 const rutas: RutaIndexable[] = [
   { path: "/", changeFrequency: "monthly", priority: 1 },
   // Indexable y de baja prioridad: nadie la busca, pero que sea rastreable y
   // encontrable es parte de cumplir con la Ley 21.719.
   { path: "/privacidad", changeFrequency: "yearly", priority: 0.3 },
+  // Entró al sitemap el 2026-08-29, cuando `app/api/assessment/route.ts` pasó a
+  // existir (paso 7): hasta entonces la página se servía pero su formulario
+  // posteaba a un 404, y anunciar eso habría sido peor que no anunciarlo.
+  { path: "/assessment", changeFrequency: "monthly", priority: 0.8 },
 ];
 
 /**
@@ -43,6 +47,33 @@ const rutas: RutaIndexable[] = [
  *    crawler nunca llega a leer la etiqueta `noindex` — con lo cual, si alguien
  *    la enlaza, puede terminar indexada igual, sin título ni descripción. Para
  *    que `noindex` funcione, la página tiene que ser rastreable. Ver `robots.ts`.
+ */
+
+/**
+ * `/assessment` queda fuera del sitemap **por ahora**, y por un motivo distinto
+ * al de `/thank-you`. Acá no hay ninguna decisión permanente: es una página que
+ * queremos indexada, apenas sirva para algo.
+ *
+ * 1. **Por qué todavía no se anuncia.** El formulario postea a
+ *    `/api/assessment`, que llega en el paso 7 de la Fase 2 y hoy no existe:
+ *    quien complete los 15 campos se come un 404 al enviar. Meterla en el
+ *    sitemap es pedirle a Google que mande gente a una página cuya única acción
+ *    falla — se gasta la primera impresión y, si el crawler la indexa así, la
+ *    señal de calidad que registra es la de esa versión. No anunciarla cuesta
+ *    cero; anunciarla rota cuesta reputación de dominio.
+ *
+ * 2. **Por eso NO lleva `noindex`, y la distinción es la del bloque de arriba
+ *    leída al revés.** `/thank-you` no se indexa nunca: es una decisión de
+ *    diseño y `noindex` la expresa bien. `/assessment` sí se va a indexar: lo
+ *    único que hacemos es no **anunciarla** mientras esté a medio construir. Un
+ *    `noindex` "temporal" es una promesa que hay que acordarse de deshacer meses
+ *    después, y en este proyecto ya sabemos qué pasa con esas: se olvidan y
+ *    terminan bloqueando en producción algo que hace rato funciona. Estar fuera
+ *    del sitemap no bloquea nada — el día del paso 7 se descomenta la línea de
+ *    arriba y listo, sin tocar `robots.ts` ni la metadata de la página.
+ *
+ * 3. **Qué disparar cuando se descomente**: reenviar el sitemap en Search
+ *    Console. Es lo que convierte "está en el archivo" en "Google lo vio".
  */
 
 /**

@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { enviarEmailLead, plantillaLead } from "@/lib/email";
+import {
+  asuntoPreDiagnostico,
+  enviarEmailLead,
+  enviarPreDiagnostico,
+  plantillaLead,
+} from "@/lib/email";
 import type {
   LeadAssessmentNormalizado,
   LeadContactoNormalizado,
@@ -187,9 +192,56 @@ describe("plantillaLead — lead de assessment", () => {
   });
 
   it("muestra las etiquetas de los enums, no los slugs", () => {
-    const texto = plantillaLead(assessment()).texto;
+    const texto = plantillaLead(
+      assessment({ horasSemanaProceso: "5-15" }),
+    ).texto;
     expect(texto).toContain("Planillas Excel");
     expect(texto).not.toContain("planillas-excel");
+    expect(texto).toContain("Entre 5 y 15 horas");
+    expect(texto).not.toContain("5-15");
+  });
+
+  /**
+   * `horasSemanaProceso` es el último enum que viajaba crudo a la bandeja: se
+   * emitía `"5-15 (declarado)"`. Los cinco valores se cubren enteros porque el
+   * mapa vive en `lib/leads.ts` y lo comparten formulario y email — si alguien
+   * agrega un rango y se olvida de la etiqueta, esto lo dice acá y no en la
+   * bandeja de Daniela.
+   */
+  it.each([
+    ["<5", "Menos de 5 horas"],
+    ["5-15", "Entre 5 y 15 horas"],
+    ["15-40", "Entre 15 y 40 horas"],
+    [">40", "Más de 40 horas"],
+    ["no-se", "No lo tengo medido"],
+  ] as const)("traduce el rango de horas %s", (rango, etiqueta) => {
+    const texto = plantillaLead(
+      assessment({ horasSemanaProceso: rango }),
+    ).texto;
+    expect(texto).toContain(etiqueta);
+    expect(texto).not.toContain(rango);
+    // El sufijo "(declarado)" se sacó: la etiqueta ya se lee como respuesta.
+    expect(texto).not.toContain("(declarado)");
+  });
+
+  /**
+   * *"No lo tengo medido"* y *"no contestó"* son dos cosas distintas y tienen
+   * que verse distinto: la primera es la respuesta del cliente ideal (falta de
+   * visibilidad, que es lo que vende la consultora), la segunda es un campo
+   * opcional que se saltearon. Colapsarlas en el email borra esa señal.
+   */
+  it("distingue 'no lo tengo medido' de un campo sin responder", () => {
+    const medido = plantillaLead(
+      assessment({ horasSemanaProceso: "no-se" }),
+    ).texto;
+    const sinResponder = plantillaLead(
+      assessment({ horasSemanaProceso: undefined }),
+    ).texto;
+
+    expect(medido).toContain("No lo tengo medido");
+    expect(sinResponder).not.toContain("No lo tengo medido");
+    expect(sinResponder).toContain("Horas/semana del proceso");
+    expect(sinResponder).toContain("[no respondido]");
   });
 
   /** La marca del asunto es lo que permite triar desde la lista de la bandeja. */
@@ -207,5 +259,64 @@ describe("plantillaLead — lead de assessment", () => {
    */
   it("marca los opcionales no respondidos", () => {
     expect(plantillaLead(assessment()).texto).toContain("[no respondido]");
+  });
+});
+
+/**
+ * EMAIL #2: el pre-diagnóstico ya renderizado (§11). Va en texto plano y sin
+ * versión HTML a propósito —Daniela copia el Markdown dentro del template v2—,
+ * así que acá no hay nada que escapar; lo que sí hay que cuidar es el asunto.
+ */
+describe("enviarPreDiagnostico", () => {
+  function assessment(
+    cambios: Partial<LeadAssessmentNormalizado> = {},
+  ): LeadAssessmentNormalizado {
+    return {
+      tipo: "assessment",
+      nombre: "Ana Pérez",
+      email: "ana@acme.cl",
+      empresa: "Acme SpA",
+      problemaPrincipal: "Los reportes se arman a mano.",
+      solucionActual: "Planillas Excel.",
+      fuentesDatos: ["erp"],
+      equipoDatos: "parcial",
+      personasConDatos: 4,
+      cloud: "aws",
+      presupuesto: "asignado",
+      urgencia: "alta",
+      recibidoEn: "2026-08-09T12:00:00.000Z",
+      ...cambios,
+    };
+  }
+
+  it("identifica al lead y se distingue del EMAIL #1 en la bandeja", () => {
+    const asunto = asuntoPreDiagnostico(assessment());
+    expect(asunto).toBe("Pre-diagnóstico: Ana Pérez (Acme SpA)");
+    // El asunto del EMAIL #1 del mismo lead empieza con "Assessment: ".
+    expect(asunto).not.toBe(plantillaLead(assessment()).asunto);
+  });
+
+  /** Misma barrera contra inyección de headers SMTP que el asunto del #1. */
+  it("aplasta el asunto en una sola línea", () => {
+    const asunto = asuntoPreDiagnostico(
+      assessment({ nombre: "Ana\r\nBcc: victima@ejemplo.cl\x00" }),
+    );
+    expect(asunto).not.toMatch(/[\r\n\x00]/);
+  });
+
+  describe("sin configurar", () => {
+    const original = process.env.RESEND_API_KEY;
+    afterEach(() => {
+      if (original === undefined) delete process.env.RESEND_API_KEY;
+      else process.env.RESEND_API_KEY = original;
+    });
+
+    it("devuelve 'sin-configurar' sin tocar la red", async () => {
+      delete process.env.RESEND_API_KEY;
+
+      const resultado = await enviarPreDiagnostico(assessment(), "# Documento");
+      expect(resultado.ok).toBe(false);
+      if (!resultado.ok) expect(resultado.motivo).toBe("sin-configurar");
+    });
   });
 });

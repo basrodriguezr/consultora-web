@@ -10,17 +10,30 @@ import { site } from "@/content/site";
  * formulario prometía "sin terceros" mientras mandaba los datos a Resend y
  * cargaba GA4 en la misma página — una afirmación falsa y reclamable.
  *
- * Si cambia el flujo de datos (se agrega una base de datos, se conecta la API
- * de Claude en la Fase 2, se cambia de proveedor de email), **hay que actualizar
- * esta página en el mismo commit.** Cada afirmación de abajo es verificable
- * contra el código:
+ * Si cambia el flujo de datos (se agrega una base de datos, se suma un
+ * proveedor, se cambia de proveedor de email), **hay que actualizar esta página
+ * en el mismo commit.** Cada afirmación de abajo es verificable contra el
+ * código:
  *
- *   - campos del formulario  → `lib/leads.ts` (leadContactoSchema)
+ *   - campos del formulario corto → `lib/leads.ts` (leadContactoSchema, 4)
+ *   - campos del formulario largo → `lib/leads.ts` (leadAssessmentSchema, 15)
  *   - envío por email        → `lib/email.ts` (Resend)
+ *   - modelo de lenguaje     → `lib/assessment/cliente.ts` (Anthropic) y
+ *                              `lib/assessment/prompt.ts` (QUÉ se le manda)
  *   - ausencia de base de datos → no hay cliente de DB en el proyecto
  *   - analítica              → `components/Analytics.tsx` (GA4, condicional)
  *   - agenda                 → `components/CalendlyEmbed.tsx` (condicional)
  *   - dirección IP           → `lib/rate-limit.ts` (en memoria, agrupada /64)
+ *
+ * 🛑 **Esta advertencia ya falló una vez, y saberlo importa más que la
+ * advertencia.** Estaba escrita acá y en otros dos archivos, las tres diciendo
+ * "en el mismo commit"; el paso 7 conectó la API de Claude el 2026-08-29 y
+ * ninguno de los tres se leyó. La página estuvo cuatro días diciendo
+ * "recolectamos exactamente cuatro datos" mientras `/assessment` recolectaba
+ * quince y mandaba parte de eso a un tercero no declarado. **Un recordatorio en
+ * un comentario no es un control: solo funciona si alguien lo lee en el momento
+ * exacto.** Si volvés a sumar un proveedor, lo que hay que dejar no es otro
+ * comentario — es algo que falle solo.
  */
 
 export const metadata: Metadata = {
@@ -31,7 +44,7 @@ export const metadata: Metadata = {
 };
 
 /** Última revisión del texto. Estático a propósito: es un dato editorial. */
-const ULTIMA_ACTUALIZACION = "31 de julio de 2026";
+const ULTIMA_ACTUALIZACION = "2 de septiembre de 2026";
 
 export default function Privacidad() {
   return (
@@ -56,8 +69,13 @@ export default function Privacidad() {
         <section>
           <h2 className="text-lg font-medium text-fg">Qué datos recolectamos</h2>
           <p className="mt-3">
-            Si completás el formulario de contacto, recolectamos exactamente
-            cuatro datos, y ninguno más:
+            Depende de cuál de los dos formularios completes.
+          </p>
+          <p className="mt-4">
+            <strong className="text-fg">
+              El formulario de contacto de la portada
+            </strong>{" "}
+            pide exactamente cuatro datos, y ninguno más:
           </p>
           <ul className="mt-3 list-disc space-y-1 pl-5">
             <li>Tu nombre</li>
@@ -65,10 +83,24 @@ export default function Privacidad() {
             <li>Tu rol en la empresa</li>
             <li>El principal desafío que seleccionaste</li>
           </ul>
+          <p className="mt-4">
+            <strong className="text-fg">
+              El formulario de diagnóstico
+            </strong>{" "}
+            es más largo: son quince campos, cuatro de ellos opcionales. Además
+            de tu nombre y tu correo, pide{" "}
+            <strong className="text-fg">el nombre de tu empresa</strong> y
+            respuestas sobre su situación con datos: qué problema querés
+            resolver, cómo lo resuelven hoy y quién lo hace, de dónde salen los
+            datos, si hay equipo dedicado y de qué tamaño, qué nube usan, qué
+            tan urgente es, si hay presupuesto, cuántas horas consume el
+            proceso, quién impulsa el proyecto, si están evaluando cambiar de
+            sistema y qué sistemas usan hoy.
+          </p>
           <p className="mt-3">
-            El formulario no pide teléfono, dirección, RUT ni datos de tu
-            empresa. No usamos cookies de publicidad ni de perfilamiento, y no
-            compramos ni enriquecemos estos datos con fuentes externas.
+            Ninguno de los dos pide teléfono, dirección ni RUT. No usamos
+            cookies de publicidad ni de perfilamiento, y no compramos ni
+            enriquecemos estos datos con fuentes externas.
           </p>
           <p className="mt-3">
             Además, para evitar el abuso automatizado del formulario, nuestro
@@ -86,6 +118,14 @@ export default function Privacidad() {
             suscribimos a ninguna lista, no te enviamos newsletter y no
             vendemos, cedemos ni compartimos tus datos con terceros para fines
             comerciales.
+          </p>
+          <p className="mt-3">
+            Si completaste el formulario de diagnóstico, además usamos tus
+            respuestas para preparar un análisis preliminar de tu situación, que
+            leemos antes de la conversación para no gastarla preguntándote lo
+            básico. Ese análisis lo genera un modelo de lenguaje a partir de lo
+            que escribiste (ver más abajo), es de uso interno y no se publica ni
+            se envía automáticamente a nadie.
           </p>
         </section>
 
@@ -116,6 +156,17 @@ export default function Privacidad() {
               <strong className="text-fg">Calendly</strong> — si agendás una
               conversación, los datos de esa reserva los procesa Calendly bajo
               su propia política.
+            </li>
+            <li>
+              <strong className="text-fg">Anthropic</strong> — solo si
+              completaste el formulario de diagnóstico. Sus modelos procesan tus
+              respuestas para generar el análisis preliminar que leemos antes de
+              la reunión.{" "}
+              <strong className="text-fg">
+                No le enviamos tu nombre ni tu correo electrónico
+              </strong>
+              : viajan el nombre de tu empresa y lo que contaste sobre su
+              situación con datos, no tus datos de contacto.
             </li>
           </ul>
         </section>

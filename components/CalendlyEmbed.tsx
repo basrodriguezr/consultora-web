@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+
+import { assessment } from "@/content/assessment";
 import { site } from "@/content/site";
 
 /**
@@ -132,6 +135,41 @@ interface ConfirmacionProps {
    * para navegar.
    */
   nivelTitulo?: NivelTitulo;
+
+  /**
+   * `false` no monta el embed de Calendly. **No cambia nada más**: el título, el
+   * párrafo y el link de proyectos son idénticos en los dos casos.
+   *
+   * Existe por la decisión de Daniela del 2026-08-09: en `/assessment`, un lead
+   * que no califica no ve la agenda. El recurso escaso ahí no es la bandeja sino
+   * **su hora**, y un `probablemente-no` que se auto-agenda se come una hora
+   * real e irrecuperable.
+   *
+   * ⚠️ **Lo que este flag NO puede hacer es explicar por qué.** La confirmación
+   * no dice ni insinúa que alguien no califica: la regla es una conjunción sobre
+   * tres enums y se va a equivocar, y quien decide es Daniela, por correo. Si
+   * algún día alguien quiere agregar acá un "te contactaremos si corresponde",
+   * eso es exactamente lo prohibido.
+   *
+   * El default es `true` para que `/thank-you` y `ContactoForm` —donde no hay
+   * calificación que valga— no tengan que enterarse de que esto existe. El
+   * formulario de contacto son 4 campos y no tiene con qué calificar a nadie.
+   */
+  mostrarAgenda?: boolean;
+
+  /**
+   * `true` agrega el enlace a `/assessment` debajo de la confirmación.
+   *
+   * **El default es `false` a propósito, y los tres consumidores lo explican:**
+   * `AssessmentForm` no puede ofrecerlo —quien acaba de contestar quince campos
+   * no tiene que ver una invitación a contestarlos—, `/thank-you` es adonde cae
+   * quien ya agendó dentro de Calendly, y ahí la invitación es otra decisión que
+   * nadie tomó. El único que lo enciende es `ContactoForm`.
+   *
+   * Es la opción A que eligió Daniela el 2026-08-29: `/assessment` es un extra
+   * para quien ya convirtió, no un peaje antes de la agenda.
+   */
+  ofrecerDiagnostico?: boolean;
 }
 
 /**
@@ -147,7 +185,11 @@ interface ConfirmacionProps {
  * si la persona ya agendó dentro del iframe, así que no se afirma ninguna de
  * las dos cosas.
  */
-export function Confirmacion({ nivelTitulo = "h3" }: ConfirmacionProps) {
+export function Confirmacion({
+  nivelTitulo = "h3",
+  mostrarAgenda = true,
+  ofrecerDiagnostico = false,
+}: ConfirmacionProps) {
   const Titulo = nivelTitulo;
 
   return (
@@ -160,9 +202,21 @@ export function Confirmacion({ nivelTitulo = "h3" }: ConfirmacionProps) {
         menos de 24 horas hábiles.
       </p>
 
-      <div className="mt-8">
-        <CalendlyEmbed />
-      </div>
+      {mostrarAgenda && (
+        <div className="mt-8">
+          <CalendlyEmbed />
+        </div>
+      )}
+
+      {ofrecerDiagnostico && (
+        <p className="mt-8 text-sm text-muted">
+          {assessment.invitacion.pregunta}{" "}
+          <Link className={CLASE_LINK} href="/assessment">
+            {assessment.invitacion.enlace}
+          </Link>
+          . {assessment.invitacion.cierre}
+        </p>
+      )}
 
       <p className="mt-8 text-sm text-muted">
         Mientras tanto, puedes revisar{" "}

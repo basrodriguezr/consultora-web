@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { servicios } from "@/content/servicios";
+import { rangoLegible } from "@/lib/assessment/catalogo-interno";
 import type { SalidaAssessment } from "@/lib/assessment/esquema";
 import { renderPreDiagnostico } from "@/lib/assessment/render";
 import type { LeadAssessmentNormalizado } from "@/lib/leads";
@@ -143,10 +145,42 @@ describe("renderPreDiagnostico — las reglas de contenido", () => {
 
   it("nombra el servicio recomendado con su rango y plazo", () => {
     const doc = renderPreDiagnostico(lead(), salida({ servicioRecomendado: "finops" }), "a-evaluar");
-    expect(doc).toContain("FinOps");
+    expect(doc).toContain("Control y optimización de costos cloud");
     expect(doc).toContain("$8–18M CLP");
     expect(doc).toContain("4-6 semanas");
   });
+
+  /**
+   * Hueco real y verificado: los snapshots congelan `"quick-win"` y el test de
+   * arriba usa `"finops"`. **Ningún caso tocaba el slug `assessment`** — el
+   * servicio principal del producto—, así que renombrarlo no habría movido una
+   * sola línea de golden.
+   *
+   * `nombreServicio()` y `plazoServicio()` no lanzan cuando el slug no está en
+   * `content/servicios.ts`: caen al slug crudo y a la cadena vacía. Eso es
+   * correcto (el documento no revienta) y es también la forma que tiene el
+   * defecto de pasar desapercibido: la línea sale como `**assessment** — $3–6M
+   * CLP, ` y se lee como un error de armado en la sección 5.
+   *
+   * Es la misma medicina que se le aplicó al enum de horas después del bug de
+   * `"no-se h/semana"`: **el golden congela la forma del documento, no el
+   * dominio de los valores.** Se recorre el catálogo entero, así que agregar un
+   * servicio lo cubre solo.
+   */
+  it.each(servicios.map((s) => [s.slug, s.nombre, s.plazo] as const))(
+    "renderiza el siguiente paso completo para el slug %s",
+    (slug, nombre, plazo) => {
+      const doc = renderPreDiagnostico(
+        lead(),
+        salida({ servicioRecomendado: slug }),
+        "a-evaluar",
+      );
+
+      expect(doc).toContain(`**${nombre}** — ${rangoLegible(slug)}, ${plazo}`);
+      expect(nombre.trim()).not.toBe("");
+      expect(plazo.trim()).not.toBe("");
+    },
+  );
 
   /**
    * Sin horas declaradas no hay cifra: sale la marca de pendiente y **nunca un
@@ -160,6 +194,30 @@ describe("renderPreDiagnostico — las reglas de contenido", () => {
     );
     expect(doc).toContain("[por confirmar en discovery]");
     expect(doc).not.toContain("$0,0M CLP");
+  });
+
+  /**
+   * Regresión de un defecto real: el sufijo "h/semana" se pegaba al valor crudo
+   * del enum, así que `"no-se"` producía **`"no-se h/semana"`** en la primera
+   * página del documento.
+   *
+   * Pasó desapercibido porque el golden congela el caso `"15-40"` —donde el
+   * crudo se lee bien— y el único otro caso testeado era `undefined`, que toma
+   * la otra rama del ternario. **El valor roto era justo el del cliente ideal:**
+   * quien no midió cuánto le cuesta el proceso tiene falta de visibilidad, que
+   * es exactamente lo que vende la consultora.
+   *
+   * Se testea por texto y no por snapshot a propósito: un golden nuevo por cada
+   * rango congelaría cinco documentos completos para vigilar una línea.
+   */
+  it("traduce 'no-se' a una frase legible, sin pegarle la unidad al slug", () => {
+    const doc = renderPreDiagnostico(
+      lead({ horasSemanaProceso: "no-se" }),
+      salida(),
+      "a-evaluar",
+    );
+    expect(doc).toContain("**Proceso declarado:** No lo tengo medido");
+    expect(doc).not.toContain("no-se h/semana");
   });
 
   it("deja la calificación y sus insumos en la parte interna", () => {
