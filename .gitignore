@@ -34,6 +34,10 @@ yarn-error.log*
 .env*
 !.env.example
 
+# borradores del agente de propuestas (Fase 3): llevan nombre de empresa, cargos,
+# correos y el presupuesto declarado por un cliente real. Nunca se commitean.
+/propuestas
+
 # vercel
 .vercel
 
