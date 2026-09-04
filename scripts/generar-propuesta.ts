@@ -173,10 +173,23 @@ function correrChequeos(salidaJson: string, documento: string): void {
     console.log(patron.test(documento) ? `✅ ${nombre}` : `🛑 ${nombre} — AUSENTE`);
   }
 
+  /*
+   * ⚠️ **Este chequeo corre solo sobre la mitad que ve el cliente, y la primera
+   * versión no lo hacía.** Buscaba `§` en el documento entero y daba 🛑 en las
+   * dos corridas de calibración por `(§6)` — una referencia que `render.ts`
+   * pone **a propósito** dentro de la sección interna, la que Daniela borra
+   * antes de enviar. O sea el chequeo reprobaba al renderer por hacer bien su
+   * trabajo. Es el mismo error contra el que advierte el comentario de arriba,
+   * cometido dos funciones más abajo: un chequeo textual solo prueba algo si
+   * corre sobre el artefacto donde ese algo importa.
+   */
+  const CORTE_INTERNO = "_Lo que sigue es interno y se borra antes de enviar._";
+  const paraElCliente = documento.split(CORTE_INTERNO)[0] ?? documento;
+
   console.log(
-    /ADR-005|§\d/.test(documento)
-      ? "🛑 jerga interna filtrada en el documento del cliente"
-      : "✅ sin jerga interna en el documento",
+    /ADR-\d|§\d/.test(paraElCliente)
+      ? "🛑 jerga interna filtrada en la parte que ve el cliente"
+      : "✅ sin jerga interna en la parte que ve el cliente",
   );
 }
 
