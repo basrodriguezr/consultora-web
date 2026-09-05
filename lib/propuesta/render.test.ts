@@ -107,6 +107,7 @@ function salida(cambios: Partial<SalidaPropuesta> = {}): SalidaPropuesta {
       posicion: "medio",
       justificacion:
         "Tres fuentes con APIs estables y un consumidor claro, pero sin equipo interno que opere lo entregado después de la puesta en marcha.",
+      presupuestoDeclarado: '"Tenemos entre 10 y 20 millones para esto"',
     },
     supuestos: [
       "Las APIs de Shopify y Google Ads se mantienen disponibles con los permisos actuales.",
@@ -205,6 +206,31 @@ describe("renderPropuesta — las reglas que no pueden romperse", () => {
   it("deja constancia de cómo se cotizó, para que Daniela lo pueda auditar", () => {
     expect(doc).toContain("## Cómo se cotizó");
     expect(doc).toContain("Posición en el rango: **medio**");
+  });
+
+  /**
+   * La brecha de precio tiene que leerse de un vistazo: el presupuesto que
+   * declaró el cliente, el monto y la posición, en líneas contiguas. La
+   * calibración del 2026-09-04 salió con $35M para un cliente que había dicho
+   * 10-20M **y el documento no lo mencionaba en ninguna parte**.
+   */
+  it("muestra el presupuesto declarado pegado al monto y a la posición", () => {
+    expect(doc).toContain("Posición en el rango: **medio** → $25.000.000");
+    expect(doc).toContain(
+      '**El cliente declaró: "Tenemos entre 10 y 20 millones para esto"**',
+    );
+  });
+
+  it("omite la línea cuando el cliente no declaró presupuesto", () => {
+    const sinPresupuesto = renderPropuesta(
+      entrada(),
+      salida({
+        inversion: { ...salida().inversion, presupuestoDeclarado: null },
+      }),
+    );
+    expect(sinPresupuesto).not.toContain("El cliente declaró");
+    // Y la posición sigue trayendo el monto: esa parte no es condicional.
+    expect(sinPresupuesto).toContain("Posición en el rango: **medio** → $25.000.000");
   });
 
   it("separa lo interno de lo que ve el cliente", () => {

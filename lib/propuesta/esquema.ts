@@ -134,6 +134,33 @@ export const salidaPropuestaSchema = z.object({
     servicio: z.enum(slugsServicios),
     posicion: z.enum(POSICIONES_RANGO),
     justificacion: z.string().min(40).max(400),
+
+    /**
+     * ★ El presupuesto que el cliente declaró, **literal**, o `null` si no dijo
+     * ninguno. Campo interno: el renderer lo imprime en «Cómo se cotizó», que
+     * Daniela borra antes de enviar.
+     *
+     * 🛑 **Existe porque la calibración del 2026-09-04 encontró una brecha que
+     * ninguna de las dos mitades del sistema podía ver.** Las notas decían
+     * *"tenemos entre 10 y 20 millones"* y el borrador cotizó $35.000.000 —75%
+     * arriba— sin mencionarlo en ninguna parte. No fue un error del modelo: por
+     * diseño **el modelo no ve los montos** (los rangos son `server-only` y no
+     * entran al prompt), así que no puede saber que `alto` son $35M; y
+     * `precios.ts`, que sí calcula el monto, no ve el presupuesto porque es
+     * texto libre dentro de las notas. **Nadie comparaba.**
+     *
+     * Daniela lo resolvió el 2026-09-04: *"mostrar presupuesto declarado del
+     * cliente al lado del precio, en la parte interna. No bajes el precio solo —
+     * el ajuste lo hago yo por alcance"*. O sea el campo no cambia la cotización:
+     * pone la brecha delante de quien decide.
+     *
+     * ⚠️ **Es un campo propio y no una frase dentro de `justificacion` a
+     * propósito.** Ahí el techo son 400 caracteres y las justificaciones reales
+     * ya rondan los 330: meterle una cita textual haría que el modelo elija entre
+     * argumentar y citar, y cuando no entre, la salida no valida y se pierde el
+     * documento. Un dato discreto va en su propio campo.
+     */
+    presupuestoDeclarado: z.string().max(200).nullable(),
   }),
 
   /** §7 Supuestos específicos del proyecto. Los base van siempre, desde `content/`. */

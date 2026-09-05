@@ -61,6 +61,7 @@ function salida(): Record<string, unknown> {
       posicion: "medio",
       justificacion:
         "Tres fuentes con APIs estables y un consumidor claro, pero sin equipo interno que opere lo entregado.",
+      presupuestoDeclarado: '"Tenemos entre 10 y 20 millones para esto"',
     },
     supuestos: ["Las APIs de Shopify y Google Ads siguen disponibles."],
     faltantes: ["Confirmar el volumen diario de la tabla de ventas."],

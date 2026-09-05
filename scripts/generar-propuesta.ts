@@ -59,6 +59,7 @@ import {
   MINIMO_NOTAS,
   normalizarEntrada,
 } from "@/lib/propuesta/entrada";
+import type { SalidaPropuesta } from "@/lib/propuesta/esquema";
 import { renderPropuesta } from "@/lib/propuesta/render";
 
 interface Argumentos {
@@ -121,11 +122,28 @@ function separador(texto: string): string {
  * daría rojo siempre y el chequeo se terminaría ignorando. Al revés, el
  * encabezado de borrador solo existe después de renderizar.
  */
-function correrChequeos(salidaJson: string, documento: string): void {
+function correrChequeos(salida: SalidaPropuesta, documento: string): void {
   console.log("\n── Chequeos automáticos (primer filtro, no veredicto) ──");
 
+  const salidaJson = JSON.stringify(salida);
+
+  /*
+   * ⚠️ **`presupuestoDeclarado` sale del chequeo de cifras, y no es una excepción
+   * cómoda: es el único campo cuyo trabajo ES llevar una cifra.** Daniela pidió
+   * ver el presupuesto que declaró el cliente junto al precio (2026-09-04), así
+   * que el modelo copia ahí una cita textual —"tenemos entre 10 y 20 millones"—
+   * y el chequeo la marcaba como violación de "el modelo no escribe cifras". Es
+   * la misma familia de error que el `(§6)`: el chequeo corría sobre más
+   * superficie de la que le correspondía. Lo que la regla prohíbe es que el
+   * modelo **invente o calcule** montos en su prosa, no que cite al cliente.
+   */
+  const prosaDelModelo = JSON.stringify({
+    ...salida,
+    inversion: { ...salida.inversion, presupuestoDeclarado: null },
+  });
+
   // ── Sobre la salida del modelo ────────────────────────────────────────────
-  const plata = salidaJson.match(/\$\s?\d|\d[\d.,]*\s*(millones|M\b|CLP|UF)/gi) ?? [];
+  const plata = prosaDelModelo.match(/\$\s?\d|\d[\d.,]*\s*(millones|M\b|CLP|UF)/gi) ?? [];
   console.log(
     plata.length === 0
       ? "✅ el modelo no escribió cifras de dinero"
@@ -258,7 +276,7 @@ async function main(): Promise<void> {
   console.log("\n── Salida estructurada del modelo (JSON validado) ──\n");
   console.log(JSON.stringify(resultado.salida, null, 2));
 
-  correrChequeos(JSON.stringify(resultado.salida), documento);
+  correrChequeos(resultado.salida, documento);
 
   console.log(
     separador(

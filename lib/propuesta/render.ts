@@ -292,7 +292,20 @@ export function renderPropuesta(
     "## Cómo se cotizó",
     "",
     `- Servicio del catálogo: **${nombreServicio(inversion.servicio)}**`,
-    `- Posición en el rango: **${inversion.posicion}**`,
+    `- Posición en el rango: **${inversion.posicion}** → ${pesosLegibles(inversion.netoCLP)}`,
+    /*
+     * 🛑 El presupuesto declarado va PEGADO a la posición y al monto, no al final
+     * de la sección: el punto de la línea es que se lea la brecha de un vistazo.
+     * Sin esto, la calibración del 2026-09-04 produjo una propuesta de $35M para
+     * un cliente que declaró 10-20M, y el documento no lo mencionaba en ninguna
+     * parte (ver `esquema.ts`, `presupuestoDeclarado`).
+     *
+     * No baja el precio y no es una advertencia automática: quien decide es
+     * Daniela, y el ajuste lo hace por alcance. Decisión suya, 2026-09-04.
+     */
+    ...(salida.inversion.presupuestoDeclarado
+      ? [`- **El cliente declaró: ${salida.inversion.presupuestoDeclarado}**`]
+      : []),
     `- ${salida.inversion.justificacion}`,
     ...(entrada.preDiagnostico
       ? ["- Se usó el pre-diagnóstico de la Fase 2 como contexto adicional."]
